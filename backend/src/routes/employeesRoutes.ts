@@ -25,6 +25,7 @@ router.post("/", async (req, res) => {
         }
 
         const pass = keygen();
+        console.log(pass);
         const hash = await bcrypt.hash(pass, 10);
 
         const result = await dbService.query(
@@ -297,7 +298,7 @@ router.get("/:id/evaluations", isAuthenticated, async (req, res) => {
 
         // Execute the query
         const evaluations = await dbService.query(sqlQuery, [id]);
-
+        console.log(evaluations);
         res.status(200).json(evaluations);
     } catch (error) {
         console.error(error);
@@ -364,7 +365,7 @@ router.get("/:id/supervisors", isAuthenticated, async (req, res) => {
     const { id } = req.params;
     try {
         const result = await dbService.query(
-            "SELECT employees.employeeId, employees.firstName, employees.lastName, employee_role.name as employeeRoleName, supervisor_profile.firstName as supervisorFirstName, supervisor_profile.lastName as supervisorLastName, manager_profile.firstName as managerFirstName, manager_profile.lastName as managerLastName FROM employees LEFT JOIN positions employee_role on employee_role.holderId = employees.employeeId LEFT JOIN positions supervisor_role on supervisor_role.superviseeId = employee_role.roleId LEFT JOIN employees supervisor_profile on supervisor_profile.employeeId = supervisor_role.holderId LEFT JOIN positions manager_role on supervisor_role.roleId = manager_role.superviseeId LEFT JOIN employees manager_profile on manager_role.holderId = manager_profile.employeeId WHERE employees.employeeId = ?;",
+            "SELECT employees.employeeId, employees.firstName, employees.lastName, employee_role.name as employeeRoleName, \nsupervisor_profile.firstName as supervisorFirstName, \nsupervisor_profile.lastName as supervisorLastName,\nsupervisor_profile.employeeId as supervisorId,\nmanager_profile.firstName as managerFirstName, \nmanager_profile.lastName as managerLastName,\nmanager_profile.employeeId as managerId\nFROM employees LEFT JOIN positions employee_role on employee_role.holderId = employees.employeeId LEFT JOIN positions supervisor_role on supervisor_role.superviseeId = employee_role.roleId LEFT JOIN employees supervisor_profile on supervisor_profile.employeeId = supervisor_role.holderId LEFT JOIN positions manager_role on supervisor_role.roleId = manager_role.superviseeId LEFT JOIN employees manager_profile on manager_role.holderId = manager_profile.employeeId WHERE employees.employeeId = ?;",
             [id]
         );
         const employee = result[0];
@@ -427,15 +428,17 @@ router.delete("/:id/password", async (req, res) => {
             [id]
         );
         const pass = keygen();
-
+        console.log(pass);
         if (!existingEmployee || existingEmployee.length === 0) {
             return res.status(404).json({ message: "Employee not found" });
         }
 
+        const hash = await bcrypt.hash(pass, 10);
+
         // Update the employee record in the database
         await dbService.query(
             `UPDATE employees SET password = ? WHERE employeeId = ?`,
-            [pass, id]
+            [hash, id]
         );
         res.json({ message: "Employee updated successfully" });
     } catch (err) {

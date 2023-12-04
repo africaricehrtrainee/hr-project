@@ -11,25 +11,26 @@ import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import { NewSelfEvaluation } from "@/components/NewSelfEvaluation";
 import { NewEvaluation } from "@/components/NewEvaluation";
+import { ProtectedRoute, useAuth } from "@/hooks/useAuth";
 
-interface EmployeeResult {
+export interface EmployeeResult {
     employeeId: number;
     firstName: string;
     lastName: string;
     employeeRoleName: string;
+    supervisorId: number | null;
     supervisorFirstName: string | null;
     supervisorLastName: string | null;
+    managerId: number | null;
     managerFirstName: string | null;
-    managerLastName: string | null;
+    managerLastName: number | null;
 }
 
 export default function Objectives({ params }: { params: { userId: string } }) {
     const searchParams = useSearchParams();
     const [panel, setPanel] = useState<number>(0);
 
-    const [user, setUser] = useState<string>(
-        searchParams.get("user") ?? "user"
-    );
+    const { user } = useAuth();
 
     const [objectivesData, setObjectivesData] = useState<Objective[]>([]);
     const [objectives, setObjectives] = useState<Objective[] | null>(null);
@@ -94,7 +95,6 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                     "/supervisors"
             )
             .then((response) => {
-                console.log(response.data);
                 if (response.data.employeeId) {
                     setEmployee(response.data);
                 } else {
@@ -125,10 +125,12 @@ export default function Objectives({ params }: { params: { userId: string } }) {
         try {
             if (evaluations) {
                 // Iterate over new evaluations
-                for (const draft of evaluationsData) {
+                console.log("evaluations", evaluations);
+                for (const draft of evaluations) {
+                    console.log(draft);
                     // Check if there's an existing evaluation with the same evaluationId
-                    const found = evaluations.find(
-                        (draft) => draft.evaluationId === draft.evaluationId
+                    const found = evaluationsData.find(
+                        (before) => before.evaluationId === draft.evaluationId
                     );
                     // If there's no existing evaluation or the new one is different, post it
                     if (
@@ -136,7 +138,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                         JSON.stringify(found) !== JSON.stringify(draft)
                     ) {
                         await axios.post(
-                            `${process.env.NEXT_PUBLIC_API_URL}/api/${params.userId}/evaluations`,
+                            `${process.env.NEXT_PUBLIC_API_URL}/api/employees/${params.userId}/evaluations`,
                             draft
                         );
                     }
@@ -153,8 +155,9 @@ export default function Objectives({ params }: { params: { userId: string } }) {
     const fetchEvaluations = async () => {
         try {
             const response = await axios.get<Evaluation[]>(
-                `${process.env.NEXT_PUBLIC_API_URL}/api/${params.userId}/evaluations`
+                `${process.env.NEXT_PUBLIC_API_URL}/api/employees/${params.userId}/evaluations`
             ); // Adjust the API endpoint
+            console.log(response.data);
             setEvaluationsData(response.data);
         } catch (error) {
             console.error("Error fetching evaluations:", error);
@@ -162,6 +165,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
     };
 
     function postObjectives() {
+        console.log(objectives);
         axios
             .post(
                 process.env.NEXT_PUBLIC_API_URL +
@@ -184,6 +188,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
         fetchUser();
         fetchObjectives();
         fetchComments();
+        fetchEvaluations();
     }, []);
 
     useEffect(() => {
@@ -201,77 +206,106 @@ export default function Objectives({ params }: { params: { userId: string } }) {
         setEvaluations(arr);
     }, [evaluationsData]);
 
-    return (
-        <main className="flex min-h-screen flex-col items-start justify-start gap-2 p-8">
-            {objectives !== null && employee !== null && comments !== null ? (
-                evaluations != null && (
-                    <>
-                        {/* Top Row */}
-                        <div className="flex w-full gap-2 transition-all">
-                            {/* Shows the different steps of the evaluation process and allows navigation between them */}
-                            <Schedule setSelected={setPanel} selected={panel} />
+    useEffect(() => {
+        console.log("user", user);
+        console.log("employee", employee);
+    }, [user, employee]);
 
-                            {/* Shows profile card with supervisor */}
-                            {employee && <Profile user={employee} />}
-                        </div>
-                        {/* Main row */}
-                        {panel == 0 && (
+    return (
+        <ProtectedRoute>
+            <main className="flex min-h-screen flex-col items-start justify-start gap-2 p-8">
+                {objectives !== null &&
+                employee !== null &&
+                comments !== null ? (
+                    evaluations != null &&
+                    user &&
+                    employee && (
+                        <>
+                            {/* Top Row */}
                             <div className="flex w-full gap-2 transition-all">
-                                {/* Sidebar with objective list */}
-                                <ObjectiveList
-                                    // @ts-expect-error
-                                    setObjectives={setObjectives}
-                                    onSubmit={postObjectives}
-                                    objectives={objectives}
-                                    cache={objectivesData}
-                                    selectedObjective={selectedObjective}
-                                    setSelectedObjective={setSelectedObjective}
-                                    employeeId={params.userId}
-                                    user={user}
+                                {/* Shows the different steps of the evaluation process and allows navigation between them */}
+                                <Schedule
+                                    setSelected={setPanel}
+                                    selected={panel}
                                 />
-                                {/* Main objective form */}
-                                <NewObjective
-                                    user={user}
-                                    selectedObjective={selectedObjective}
-                                    objectives={objectives}
-                                    // @ts-expect-error
-                                    setObjectives={setObjectives}
-                                    onMark={markObjective}
-                                />
-                                {/* List of comments of the supervisor */}
-                                <CommentList
-                                    user={user}
-                                    id={params.userId}
-                                    objectives={objectives}
-                                    selectedObjective={selectedObjective}
-                                    // @ts-expect-error
-                                    setComments={setComments}
-                                    comments={comments}
-                                    cache={commentsData}
-                                    fetch={fetchComments}
-                                />
+
+                                {/* Shows profile card with supervisor */}
+                                {employee && <Profile user={employee} />}
                             </div>
-                        )}
-                        {panel == 1 && (
-                            <div className="flex w-full gap-2 transition-all">
-                                {/* Self evaluation form */}
-                                <NewSelfEvaluation />
-                                {/* Superior evaluation form */}
-                                <NewEvaluation
-                                    user={user}
-                                    evaluations={evaluations}
-                                    // @ts-expect-error
-                                    setEvaluations={setEvaluations}
-                                    onSubmit={postEvaluations}
-                                />
-                            </div>
-                        )}
-                    </>
-                )
-            ) : (
-                <></>
-            )}
-        </main>
+                            {/* Main row */}
+                            {panel == 0 && (
+                                <div className="flex w-full gap-2 transition-all">
+                                    {/* Sidebar with objective list */}
+                                    <ObjectiveList
+                                        user={user}
+                                        employee={employee}
+                                        // @ts-expect-error
+                                        setObjectives={setObjectives}
+                                        onSubmit={postObjectives}
+                                        objectives={objectives}
+                                        cache={objectivesData}
+                                        selectedObjective={selectedObjective}
+                                        setSelectedObjective={
+                                            setSelectedObjective
+                                        }
+                                    />
+                                    {/* Main objective form */}
+                                    <NewObjective
+                                        user={user}
+                                        employee={employee}
+                                        selectedObjective={selectedObjective}
+                                        objectives={objectives}
+                                        // @ts-expect-error
+                                        setObjectives={setObjectives}
+                                        onMark={markObjective}
+                                    />
+                                    {/* List of comments of the supervisor */}
+                                    <CommentList
+                                        user={user}
+                                        employee={employee}
+                                        objectives={objectives}
+                                        selectedObjective={selectedObjective}
+                                        // @ts-expect-error
+                                        setComments={setComments}
+                                        comments={comments}
+                                        cache={commentsData}
+                                        fetch={fetchComments}
+                                    />
+                                </div>
+                            )}
+                            {panel == 1 && (
+                                <div className="flex w-full gap-2 transition-all">
+                                    {/* Self evaluation form */}
+                                    <NewSelfEvaluation
+                                        evaluations={evaluations}
+                                        cache={evaluationsData}
+                                        user={user}
+                                        employee={employee}
+                                        // @ts-expect-error
+                                        setEvaluations={setEvaluations}
+                                        onSubmit={postEvaluations}
+                                        employeeId={params.userId}
+                                    />
+                                    {/* Superior evaluation form */}
+                                    <NewEvaluation
+                                        evaluations={evaluations}
+                                        cache={evaluationsData}
+                                        user={user}
+                                        employee={employee}
+                                        // @ts-expect-error
+                                        setEvaluations={setEvaluations}
+                                        onSubmit={postEvaluations}
+                                        employeeId={params.userId}
+                                    />
+                                </div>
+                            )}
+                        </>
+                    )
+                ) : (
+                    <></>
+                )}
+            </main>
+        </ProtectedRoute>
     );
 }
 

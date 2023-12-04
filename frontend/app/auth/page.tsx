@@ -3,7 +3,9 @@
 import Button from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Selector";
+import { useAuth } from "@/hooks/useAuth";
 import { Icon } from "@iconify/react";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 import { SyntheticEvent, useEffect, useState } from "react";
 
@@ -14,25 +16,37 @@ export default function Home() {
     const [password, setPassword] = useState<string>("");
 
     const router = useRouter();
+    const { setUser } = useAuth();
 
     async function logIn(e: React.SyntheticEvent) {
-        setError("");
         setLoading(true);
         e.preventDefault();
-        if (email && password) {
-            setTimeout(() => {
-                router.push("/objectives");
-            }, 2000);
-        }
+        axios
+            .post("http://localhost:4000/api/auth/login", {
+                email,
+                password,
+            })
+            .then((response) => {
+                if (response.data.user) {
+                    setUser(response.data.user);
+                    console.log(response.data.user);
+                    router.push(`/objectives/20`);
+                } else {
+                    alert("Incorrect e-mail or password");
+                }
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }
 
     useEffect(() => {
         console.log(error);
     }, [error]);
     return (
-        <main className="flex flex-col items-center justify-center min-h-screen p-16">
-            <div className="p-8 bg-white border rounded-md shadow-sm w-[320px] border-zinc-200 flex flex-col gap-1 text-center items-center">
-                <h1 className="text-2xl font-semibold leading-none w-fit">
+        <main className="flex min-h-screen flex-col items-center justify-center p-16">
+            <div className="flex w-[320px] flex-col items-center gap-1 rounded-md border border-zinc-200 bg-white p-8 text-center shadow-sm">
+                <h1 className="w-fit text-2xl font-semibold leading-none">
                     Sign in
                 </h1>
                 <h2 className="mt-1 text-sm text-zinc-500">
@@ -40,9 +54,9 @@ export default function Home() {
                 </h2>
                 <form
                     onSubmit={logIn}
-                    className="w-full gap-2 mt-4 flex flex-col items-center"
+                    className="mt-4 flex w-full flex-col items-center gap-2"
                 >
-                    <div className="w-full flex flex-col items-start">
+                    <div className="flex w-full flex-col items-start">
                         <Label className="">E-mail</Label>
                         <Input
                             type="email"
@@ -53,7 +67,7 @@ export default function Home() {
                             onChange={(e: any) => setEmail(e.target.value)}
                         />
                     </div>
-                    <div className="w-full flex flex-col items-start">
+                    <div className="flex w-full flex-col items-start">
                         <Label>Password</Label>
                         <Input
                             type="password"
@@ -67,7 +81,7 @@ export default function Home() {
                     {error && (
                         <p className="mt-1 text-sm text-red-400">{error}</p>
                     )}
-                    <div className="flex justify-center gap-2 items-center">
+                    <div className="flex items-center justify-center gap-2">
                         <Button
                             type="submit"
                             className="mt-4"

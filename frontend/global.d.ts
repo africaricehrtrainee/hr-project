@@ -12,16 +12,6 @@ interface Employee {
     deletedAt: string | null;
 }
 
-// Evaluations Table Interface
-interface Evaluation {
-    evaluationId: number;
-    employeeId: number;
-    evaluationYear: string;
-    managerId: number;
-    updatedAt: string;
-    createdAt: string;
-}
-
 // Objectives Table Interface
 interface Objective {
     objectiveId: number;

@@ -6,11 +6,12 @@ import React, {
     ReactNode,
 } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
     user: Employee | null;
-    login: (username: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
+    setUser: React.Dispatch<React.SetStateAction<Employee | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,32 +22,25 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<Employee | null>(null);
-
+    const router = useRouter();
     useEffect(() => {
         // Check session on initial load
         axios
-            .get("http://localhost:4000/api/session")
-            .then((response) => setUser(response.data.user))
+            .get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/session`)
+            .then((response) => {
+                setUser(response.data.user);
+            })
             .catch(() => setUser(null));
     }, []);
 
-    const login = async (username: string, password: string) => {
-        // Implement login logic
-        const response = await axios.post("http://localhost:4000/api/login", {
-            username,
-            password,
-        });
-        setUser(response.data.user);
-    };
-
     const logout = async () => {
         // Implement logout logic
-        await axios.post("/api/logout");
         setUser(null);
+        await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`);
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, logout, setUser }}>
             {children}
         </AuthContext.Provider>
     );
@@ -58,4 +52,26 @@ export const useAuth = () => {
         throw new Error("useAuth must be used within an AuthProvider");
     }
     return context;
+};
+
+interface ProtectedRouteProps {
+    children: React.ReactNode;
+}
+
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+    const user = useAuth();
+    const router = useRouter();
+
+    // Redirect to login if user is not authenticated
+    useEffect(() => {
+        if (!user.user) {
+            router.push("/auth"); // Redirect to your login page
+        }
+    }, [user, router]);
+
+    if (!user) {
+        return null; // You can also display an access denied message here
+    }
+
+    return <>{children}</>;
 };

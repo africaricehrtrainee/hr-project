@@ -6,10 +6,11 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState } from "react";
 import Modal from "./ui/Modal";
 import axios from "axios";
+import { EmployeeResult } from "@/app/objectives/[userId]/page";
 
 interface CommentListProps {
-    id: string;
-    user: "user" | "supervisor" | string;
+    user: Employee;
+    employee: EmployeeResult;
     objectives: Objective[];
     selectedObjective: number;
     comments: Comment[];
@@ -20,12 +21,12 @@ interface CommentListProps {
 
 export const CommentList: React.FC<CommentListProps> = ({
     user,
+    employee,
     objectives,
     selectedObjective,
     comments,
     cache,
     fetch,
-    id,
 }) => {
     const [openCommentForm, setOpenCommentForm] = useState<boolean>(false);
     const [content, setContent] = useState<string | null>(null);
@@ -38,10 +39,10 @@ export const CommentList: React.FC<CommentListProps> = ({
             .post(
                 process.env.NEXT_PUBLIC_API_URL +
                     "/api/employees/" +
-                    id +
+                    employee.employeeId +
                     "/comments",
                 {
-                    employeeId: id,
+                    employeeId: employee.employeeId,
                     objectiveId: objectives[selectedObjective].objectiveId,
                     content,
                 }
@@ -68,7 +69,7 @@ export const CommentList: React.FC<CommentListProps> = ({
                 </div>
                 {objectives &&
                     objectives[selectedObjective] &&
-                    user == "supervisor" && (
+                    user.employeeId == employee.supervisorId && (
                         <>
                             <Button
                                 type="button"

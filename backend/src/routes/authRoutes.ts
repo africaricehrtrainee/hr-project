@@ -22,7 +22,6 @@ router.get("/session", (req: Request, res: Response) => {
 
 router.get("/logout", (req: Request, res: Response) => {
     req.logout((err: any) => res.status(401).json("An error occured: " + err));
-    res.json({ message: "Logout successful" });
 });
 
 router.get("/profile", isAuthenticated, (req: Request, res: Response) => {

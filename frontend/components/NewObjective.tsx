@@ -1,16 +1,19 @@
 "use client";
+import { EmployeeResult } from "@/app/objectives/[userId]/page";
 import Button from "@/components/ui/Button";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { SetStateAction } from "react";
 
 export function NewObjective({
     user,
+    employee,
     objectives,
     selectedObjective,
     setObjectives,
     onMark,
 }: {
-    user: string;
+    user: Employee;
+    employee: EmployeeResult;
     objectives: Objective[];
     selectedObjective: number;
     setObjectives: React.Dispatch<React.SetStateAction<Objective[]>>;
@@ -62,36 +65,37 @@ export function NewObjective({
                                 />
                             </div>
                         )}
-                        <Button
-                            disabled={
-                                objectives[selectedObjective].status == "ok" ||
-                                user == "supervisor"
-                            }
-                            onClick={() => {
-                                if (
-                                    confirm(
-                                        "Do you want to delete this objective ?"
-                                    )
-                                ) {
-                                    const arr = [...objectives];
-
-                                    setObjectives(
-                                        arr.filter(
-                                            (obj, idx) =>
-                                                selectedObjective !== idx
-                                        )
-                                    );
+                        {user.employeeId == employee.employeeId && (
+                            <Button
+                                disabled={
+                                    objectives[selectedObjective].status == "ok"
                                 }
-                            }}
-                            variant="alert"
-                        >
-                            Delete objective
-                            <Icon
-                                icon="gridicons:trash"
-                                className="ml-1"
-                                fontSize={14}
-                            />
-                        </Button>
+                                onClick={() => {
+                                    if (
+                                        confirm(
+                                            "Do you want to delete this objective ?"
+                                        )
+                                    ) {
+                                        const arr = [...objectives];
+
+                                        setObjectives(
+                                            arr.filter(
+                                                (obj, idx) =>
+                                                    selectedObjective !== idx
+                                            )
+                                        );
+                                    }
+                                }}
+                                variant="alert"
+                            >
+                                Delete objective
+                                <Icon
+                                    icon="gridicons:trash"
+                                    className="ml-1"
+                                    fontSize={14}
+                                />
+                            </Button>
+                        )}
                     </div>
                     <div className="mt-2 h-full w-full">
                         <p className="text-2xl font-bold text-zinc-700">
@@ -112,7 +116,8 @@ export function NewObjective({
                                         disabled={
                                             objectives[selectedObjective]
                                                 .status == "ok" ||
-                                            user == "supervisor"
+                                            user.employeeId ==
+                                                employee.supervisorId
                                         }
                                         type="text"
                                         required
@@ -144,7 +149,8 @@ export function NewObjective({
                                         disabled={
                                             objectives[selectedObjective]
                                                 .status == "ok" ||
-                                            user == "supervisor"
+                                            user.employeeId ==
+                                                employee.employeeId
                                         }
                                         type="text"
                                         value={
@@ -176,7 +182,8 @@ export function NewObjective({
                                         disabled={
                                             objectives[selectedObjective]
                                                 .status == "ok" ||
-                                            user == "supervisor"
+                                            user.employeeId ==
+                                                employee.employeeId
                                         }
                                         type="text"
                                         value={
@@ -209,7 +216,8 @@ export function NewObjective({
                                         disabled={
                                             objectives[selectedObjective]
                                                 .status == "ok" ||
-                                            user == "supervisor"
+                                            user.employeeId ==
+                                                employee.supervisorId
                                         }
                                         value={
                                             objectives[selectedObjective]
@@ -240,7 +248,8 @@ export function NewObjective({
                                         disabled={
                                             objectives[selectedObjective]
                                                 .status == "ok" ||
-                                            user == "supervisor"
+                                            user.employeeId ==
+                                                employee.supervisorId
                                         }
                                         value={
                                             objectives[selectedObjective]
@@ -264,14 +273,13 @@ export function NewObjective({
                                 </div>
                             </div>
                         </form>
-                        {user == "supervisor" && (
+                        {user.employeeId == employee.supervisorId && (
                             <div className="absolute bottom-4 right-4 flex w-full items-center justify-end gap-2">
                                 <Button
                                     onClick={() => onMark(true)}
                                     disabled={
-                                        user !== "supervisor" ||
                                         objectives[selectedObjective].status ==
-                                            "ok"
+                                        "ok"
                                     }
                                     variant="outline"
                                 >
@@ -285,9 +293,8 @@ export function NewObjective({
                                 <Button
                                     onClick={() => onMark()}
                                     disabled={
-                                        user !== "supervisor" ||
                                         objectives[selectedObjective].status ==
-                                            "invalid"
+                                        "invalid"
                                     }
                                     variant="alert"
                                 >

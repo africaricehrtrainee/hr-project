@@ -91,11 +91,11 @@ const EditEmployee: React.FC<ProfileEditorProps> = ({
     function handleResetPassword(employeeId: number) {
         {
             axios
-                .put(
+                .delete(
                     process.env.NEXT_PUBLIC_API_URL +
                         "/api/employees/" +
                         employeeId +
-                        "/reset"
+                        "/password"
                 )
                 .then((response) =>
                     response.status == 200
