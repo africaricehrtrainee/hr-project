@@ -9,6 +9,8 @@ import { cn, getStep } from "@/util/utils";
 import { CommentList } from "../../../components/CommentList";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
+import { NewSelfEvaluation } from "@/components/NewSelfEvaluation";
+import { NewEvaluation } from "@/components/NewEvaluation";
 
 interface EmployeeResult {
     employeeId: number;
@@ -23,18 +25,23 @@ interface EmployeeResult {
 
 export default function Objectives({ params }: { params: { userId: string } }) {
     const searchParams = useSearchParams();
-    const [obj, setObj] = useState<number>(0);
+    const [panel, setPanel] = useState<number>(0);
 
     const [user, setUser] = useState<string>(
         searchParams.get("user") ?? "user"
     );
-    const [data, setData] = useState<Objective[]>([]);
-    const [employee, setEmployee] = useState<EmployeeResult | null>(null);
-    const [selectedObjective, setSelectedObjective] = useState<number>(0);
+
+    const [objectivesData, setObjectivesData] = useState<Objective[]>([]);
     const [objectives, setObjectives] = useState<Objective[] | null>(null);
-    const [selected, setSelected] = useState<number>(0);
+    const [selectedObjective, setSelectedObjective] = useState<number>(0);
+
+    const [commentsData, setcommentsData] = useState<Comment[]>([]);
     const [comments, setComments] = useState<Comment[] | null>(null);
-    const [dataComment, setDataComment] = useState<Comment[]>([]);
+
+    const [evaluationsData, setEvaluationsData] = useState<Evaluation[]>([]);
+    const [evaluations, setEvaluations] = useState<Evaluation[] | null>(null);
+
+    const [employee, setEmployee] = useState<EmployeeResult | null>(null);
 
     async function markObjective(ok?: boolean) {
         if (objectives && objectives[selectedObjective]) {
@@ -70,7 +77,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
             )
             .then((response) => {
                 if (response.data) {
-                    setData([...response.data]);
+                    setObjectivesData([...response.data]);
                 } else {
                     console.log(response);
                 }
@@ -95,6 +102,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
             })
             .catch((err) => console.log(err));
     }
+
     async function fetchComments() {
         axios
             .get<Comment[]>(
@@ -106,15 +114,54 @@ export default function Objectives({ params }: { params: { userId: string } }) {
             .then((response) => {
                 console.log(response.data);
                 if (response.data[0].commentId) {
-                    setDataComment(response.data);
+                    setcommentsData(response.data);
                 } else {
                 }
             })
             .catch((err) => console.log(err));
     }
 
+    const postEvaluations = async () => {
+        try {
+            if (evaluations) {
+                // Iterate over new evaluations
+                for (const draft of evaluationsData) {
+                    // Check if there's an existing evaluation with the same evaluationId
+                    const found = evaluations.find(
+                        (draft) => draft.evaluationId === draft.evaluationId
+                    );
+                    // If there's no existing evaluation or the new one is different, post it
+                    if (
+                        !found ||
+                        JSON.stringify(found) !== JSON.stringify(draft)
+                    ) {
+                        await axios.post(
+                            `${process.env.NEXT_PUBLIC_API_URL}/api/${params.userId}/evaluations`,
+                            draft
+                        );
+                    }
+                }
+
+                // After posting/updating evaluations, fetch the updated list
+                await fetchEvaluations();
+            }
+        } catch (error) {
+            console.error("Error posting evaluations:", error);
+        }
+    };
+
+    const fetchEvaluations = async () => {
+        try {
+            const response = await axios.get<Evaluation[]>(
+                `${process.env.NEXT_PUBLIC_API_URL}/api/${params.userId}/evaluations`
+            ); // Adjust the API endpoint
+            setEvaluationsData(response.data);
+        } catch (error) {
+            console.error("Error fetching evaluations:", error);
+        }
+    };
+
     function postObjectives() {
-        console.log(objectives);
         axios
             .post(
                 process.env.NEXT_PUBLIC_API_URL +
@@ -140,73 +187,87 @@ export default function Objectives({ params }: { params: { userId: string } }) {
     }, []);
 
     useEffect(() => {
-        const arr = data.map((a) => ({ ...a }));
-        setObj(getStep(arr));
-        console.log(getStep(arr));
-        setSelected(getStep(arr));
+        const arr = objectivesData.map((a) => ({ ...a }));
         setObjectives(arr);
-    }, [data]);
+    }, [objectivesData]);
 
     useEffect(() => {
-        console.log(dataComment);
-        const arr = dataComment.map((a) => ({ ...a }));
+        const arr = commentsData.map((a) => ({ ...a }));
         setComments(arr);
-    }, [dataComment]);
+    }, [commentsData]);
+
+    useEffect(() => {
+        const arr = evaluationsData.map((a) => ({ ...a }));
+        setEvaluations(arr);
+    }, [evaluationsData]);
 
     return (
         <main className="flex min-h-screen flex-col items-start justify-start gap-2 p-8">
             {objectives !== null && employee !== null && comments !== null ? (
-                <>
-                    <div className="flex w-full gap-2 transition-all">
-                        {/* Shows the different steps of the evaluation process and allows navigation between them */}
-                        <Schedule
-                            obj={obj}
-                            setSelected={setSelected}
-                            selected={selected}
-                        />
+                evaluations != null && (
+                    <>
+                        {/* Top Row */}
+                        <div className="flex w-full gap-2 transition-all">
+                            {/* Shows the different steps of the evaluation process and allows navigation between them */}
+                            <Schedule setSelected={setPanel} selected={panel} />
 
-                        {/* Shows profile card with supervisor */}
-
-                        {employee && <Profile user={employee} />}
-                    </div>
-                    <div className="flex w-full gap-2 transition-all">
-                        {/* Sidebar with objective list */}
-                        <ObjectiveList
-                            // @ts-expect-error
-                            setObjectives={setObjectives}
-                            onSubmit={postObjectives}
-                            objectives={objectives}
-                            cache={data}
-                            selectedObjective={selectedObjective}
-                            setSelectedObjective={setSelectedObjective}
-                            employeeId={params.userId}
-                            user={user}
-                        />
-                        {/* Main objective form */}
-                        <NewObjective
-                            user={user}
-                            selectedObjective={selectedObjective}
-                            objectives={objectives}
-                            // @ts-expect-error
-                            setObjectives={setObjectives}
-                            selected={selected}
-                            onMark={markObjective}
-                            step={obj}
-                        />
-                        {/* List of comments of the supervisor */}
-                        <CommentList
-                            user={user}
-                            id={params.userId}
-                            objectives={objectives}
-                            selectedObjective={selectedObjective}
-                            // @ts-expect-error
-                            setComments={setComments}
-                            comments={comments}
-                            cache={dataComment}
-                            fetch={fetchComments}
-                        />
-                    </div>
-                </>
+                            {/* Shows profile card with supervisor */}
+                            {employee && <Profile user={employee} />}
+                        </div>
+                        {/* Main row */}
+                        {panel == 0 && (
+                            <div className="flex w-full gap-2 transition-all">
+                                {/* Sidebar with objective list */}
+                                <ObjectiveList
+                                    // @ts-expect-error
+                                    setObjectives={setObjectives}
+                                    onSubmit={postObjectives}
+                                    objectives={objectives}
+                                    cache={objectivesData}
+                                    selectedObjective={selectedObjective}
+                                    setSelectedObjective={setSelectedObjective}
+                                    employeeId={params.userId}
+                                    user={user}
+                                />
+                                {/* Main objective form */}
+                                <NewObjective
+                                    user={user}
+                                    selectedObjective={selectedObjective}
+                                    objectives={objectives}
+                                    // @ts-expect-error
+                                    setObjectives={setObjectives}
+                                    onMark={markObjective}
+                                />
+                                {/* List of comments of the supervisor */}
+                                <CommentList
+                                    user={user}
+                                    id={params.userId}
+                                    objectives={objectives}
+                                    selectedObjective={selectedObjective}
+                                    // @ts-expect-error
+                                    setComments={setComments}
+                                    comments={comments}
+                                    cache={commentsData}
+                                    fetch={fetchComments}
+                                />
+                            </div>
+                        )}
+                        {panel == 1 && (
+                            <div className="flex w-full gap-2 transition-all">
+                                {/* Self evaluation form */}
+                                <NewSelfEvaluation />
+                                {/* Superior evaluation form */}
+                                <NewEvaluation
+                                    user={user}
+                                    evaluations={evaluations}
+                                    // @ts-expect-error
+                                    setEvaluations={setEvaluations}
+                                    onSubmit={postEvaluations}
+                                />
+                            </div>
+                        )}
+                    </>
+                )
             ) : (
                 <></>
             )}
@@ -304,11 +365,9 @@ function Evaluation() {
 }
 
 function Schedule({
-    obj,
     setSelected,
     selected,
 }: {
-    obj: number;
     setSelected: (idx: number) => any;
     selected: number;
 }) {

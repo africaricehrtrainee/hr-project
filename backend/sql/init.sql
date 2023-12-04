@@ -14,6 +14,32 @@ CREATE TABLE
     );
 
 CREATE TABLE
+    IF NOT EXISTS evaluations (
+        status ENUM ('draft', 'sent') DEFAULT 'draft',
+        evaluationId INT AUTO_INCREMENT PRIMARY KEY,
+        authorId INT,
+        employeeId INT,
+        evaluationYear CHAR(4) NOT NULL DEFAULT '2024',
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        efficiency TEXT,
+        efficiencyRating INT,
+        competency TEXT,
+        competencyRating INT,
+        commitment TEXT,
+        commitmentRating INT,
+        initiative TEXT,
+        initiativeRating INT,
+        respect TEXT,
+        respectRating INT,
+        leadership TEXT,
+        leadershipRating INT,
+        FOREIGN KEY (employeeId) REFERENCES employees (employeeId) ON UPDATE CASCADE ON DELETE SET NULL,
+        FOREIGN KEY (authorId) REFERENCES employees (employeeId) ON UPDATE CASCADE ON DELETE SET NULL,
+        CHECK (evaluationYear REGEXP '^[0-9]{4}$')
+    );
+
+CREATE TABLE
     IF NOT EXISTS objectives (
         objectiveId INT AUTO_INCREMENT PRIMARY KEY,
         status ENUM ('draft', 'sent', 'invalid', 'ok') DEFAULT 'draft',

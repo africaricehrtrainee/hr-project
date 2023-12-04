@@ -15,5 +15,3 @@ CREATE TABLE
         FOREIGN KEY (employeeId) REFERENCES employees (employeeId) ON UPDATE CASCADE ON DELETE SET NULL,
         CHECK (evaluationYear REGEXP '^[0-9]{4}$')
     );
-
-Objectives Table

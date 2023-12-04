@@ -8,15 +8,11 @@ export function NewObjective({
     objectives,
     selectedObjective,
     setObjectives,
-    selected,
-    step,
     onMark,
 }: {
     user: string;
     objectives: Objective[];
     selectedObjective: number;
-    selected: number;
-    step: number;
     setObjectives: React.Dispatch<React.SetStateAction<Objective[]>>;
     onMark: (ok?: boolean) => any;
 }) {

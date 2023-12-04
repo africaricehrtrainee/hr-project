@@ -190,6 +190,121 @@ router.post("/:id/objectives", async (req, res) => {
     }
 });
 
+router.post("/:id/evaluations", isAuthenticated, async (req, res) => {
+    const { id } = req.params; // Get the employee ID from request params
+    const {
+        evaluationId,
+        status,
+        authorId,
+        evaluationYear,
+        efficiency,
+        efficiencyRating,
+        competency,
+        competencyRating,
+        commitment,
+        commitmentRating,
+        initiative,
+        initiativeRating,
+        respect,
+        respectRating,
+        leadership,
+        leadershipRating,
+    } = req.body;
+
+    try {
+        // Define the SQL query using INSERT ... ON DUPLICATE KEY UPDATE
+        const sqlQuery = `
+            INSERT INTO evaluations (
+                evaluationId,
+                status,
+                authorId,
+                employeeId,
+                evaluationYear,
+                updatedAt,
+                createdAt,
+                efficiency,
+                efficiencyRating,
+                competency,
+                competencyRating,
+                commitment,
+                commitmentRating,
+                initiative,
+                initiativeRating,
+                respect,
+                respectRating,
+                leadership,
+                leadershipRating
+            ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+                status = VALUES(status),
+                authorId = VALUES(authorId),
+                evaluationYear = VALUES(evaluationYear),
+                updatedAt = CURRENT_TIMESTAMP,
+                efficiency = VALUES(efficiency),
+                efficiencyRating = VALUES(efficiencyRating),
+                competency = VALUES(competency),
+                competencyRating = VALUES(competencyRating),
+                commitment = VALUES(commitment),
+                commitmentRating = VALUES(commitmentRating),
+                initiative = VALUES(initiative),
+                initiativeRating = VALUES(initiativeRating),
+                respect = VALUES(respect),
+                respectRating = VALUES(respectRating),
+                leadership = VALUES(leadership),
+                leadershipRating = VALUES(leadershipRating)
+        `;
+
+        // Execute the query
+        const result = await dbService.query(sqlQuery, [
+            evaluationId,
+            status,
+            authorId,
+            id, // Use the employee ID from request params
+            evaluationYear,
+            efficiency,
+            efficiencyRating,
+            competency,
+            competencyRating,
+            commitment,
+            commitmentRating,
+            initiative,
+            initiativeRating,
+            respect,
+            respectRating,
+            leadership,
+            leadershipRating,
+        ]);
+
+        res.status(201).json({
+            message: "Evaluation created or updated",
+            id: result.insertId,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error creating or updating the evaluation");
+    }
+});
+
+router.get("/:id/evaluations", isAuthenticated, async (req, res) => {
+    const { id } = req.params; // Get the employee ID from request params
+
+    try {
+        // Define the SQL query to fetch evaluations for the specified employee
+        const sqlQuery = `
+            SELECT * FROM evaluations
+            WHERE employeeId = ?
+        `;
+
+        // Execute the query
+        const evaluations = await dbService.query(sqlQuery, [id]);
+
+        res.status(200).json(evaluations);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error retrieving evaluations");
+    }
+});
+
 router.get("/:id/objectives", async (req, res) => {
     try {
         const { id } = req.params;

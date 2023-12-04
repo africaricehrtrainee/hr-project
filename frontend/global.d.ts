@@ -63,3 +63,25 @@ interface Position {
     createdAt: string;
     updatedAt: string;
 }
+
+interface Evaluation {
+    status: "draft" | "sent";
+    evaluationId: number;
+    authorId: number;
+    employeeId: number;
+    evaluationYear: string;
+    updatedAt: string; // You can use a string for TIMESTAMP
+    createdAt: string; // You can use a string for TIMESTAMP
+    efficiency: string | null; // Assuming these fields can be nullable
+    efficiencyRating: number | null;
+    competency: string | null;
+    competencyRating: number | null;
+    commitment: string | null;
+    commitmentRating: number | null;
+    initiative: string | null;
+    initiativeRating: number | null;
+    respect: string | null;
+    respectRating: number | null;
+    leadership: string | null;
+    leadershipRating: number | null;
+}
