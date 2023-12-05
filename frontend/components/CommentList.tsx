@@ -50,6 +50,7 @@ export const CommentList: React.FC<CommentListProps> = ({
             .then((response) => {
                 if (response.status == 201) {
                     fetch();
+                    alert("Comment updated successfully");
                     setOpenCommentForm(false);
                 }
             })

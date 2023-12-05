@@ -116,8 +116,8 @@ export function NewObjective({
                                         disabled={
                                             objectives[selectedObjective]
                                                 .status == "ok" ||
-                                            user.employeeId ==
-                                                employee.supervisorId
+                                            user.employeeId !==
+                                                employee.employeeId
                                         }
                                         type="text"
                                         required
@@ -149,7 +149,7 @@ export function NewObjective({
                                         disabled={
                                             objectives[selectedObjective]
                                                 .status == "ok" ||
-                                            user.employeeId ==
+                                            user.employeeId !==
                                                 employee.employeeId
                                         }
                                         type="text"
@@ -182,7 +182,7 @@ export function NewObjective({
                                         disabled={
                                             objectives[selectedObjective]
                                                 .status == "ok" ||
-                                            user.employeeId ==
+                                            user.employeeId !==
                                                 employee.employeeId
                                         }
                                         type="text"
@@ -216,8 +216,8 @@ export function NewObjective({
                                         disabled={
                                             objectives[selectedObjective]
                                                 .status == "ok" ||
-                                            user.employeeId ==
-                                                employee.supervisorId
+                                            user.employeeId !==
+                                                employee.employeeId
                                         }
                                         value={
                                             objectives[selectedObjective]
@@ -248,8 +248,8 @@ export function NewObjective({
                                         disabled={
                                             objectives[selectedObjective]
                                                 .status == "ok" ||
-                                            user.employeeId ==
-                                                employee.supervisorId
+                                            user.employeeId !==
+                                                employee.employeeId
                                         }
                                         value={
                                             objectives[selectedObjective]

@@ -145,6 +145,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                 }
 
                 // After posting/updating evaluations, fetch the updated list
+                alert("Evaluations updated successfully")
                 await fetchEvaluations();
             }
         } catch (error) {
@@ -179,6 +180,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
             .then((response) => {
                 if (response.status == 201) {
                     fetchObjectives();
+                    alert("Objectives updated successfully")
                 }
             })
             .catch((err) => console.log(err));

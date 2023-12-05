@@ -127,17 +127,11 @@ router.post("/:id/objectives", async (req, res) => {
             const successConditions = objective.successConditions ?? null;
             const deadline = objective.deadline ?? null;
             const kpi = objective.kpi ?? null;
-            const efficiency = objective.efficiency ?? null;
-            const competency = objective.competency ?? null;
-            const commitment = objective.commitment ?? null;
-            const initiative = objective.initiative ?? null;
-            const respect = objective.respect ?? null;
-            const leadership = objective.leadership ?? null;
 
             // Find if objective already exists
             if (objectiveId) {
                 const result = await dbService.query(
-                    "UPDATE objectives SET title = ?, status = ?, description = ?, successConditions = ?, deadline = ?, kpi = ?, efficiency = ?, competency = ?, commitment = ?, initiative = ?, respect = ?, leadership = ? WHERE objectiveId = ?",
+                    "UPDATE objectives SET title = ?, status = ?, description = ?, successConditions = ?, deadline = ?, kpi = ? WHERE objectiveId = ?",
                     [
                         title,
                         status,
@@ -145,12 +139,6 @@ router.post("/:id/objectives", async (req, res) => {
                         successConditions,
                         deadline,
                         kpi,
-                        efficiency,
-                        competency,
-                        commitment,
-                        initiative,
-                        respect,
-                        leadership,
                         objectiveId,
                     ]
                 );
@@ -161,21 +149,8 @@ router.post("/:id/objectives", async (req, res) => {
                 }
             } else {
                 const result = await dbService.query(
-                    "INSERT INTO objectives (title, description, successConditions, deadline, kpi, efficiency, competency, commitment, initiative, respect, leadership, employeeId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                    [
-                        title,
-                        description,
-                        successConditions,
-                        deadline,
-                        kpi,
-                        efficiency,
-                        competency,
-                        commitment,
-                        initiative,
-                        respect,
-                        leadership,
-                        id,
-                    ]
+                    "INSERT INTO objectives (title, description, successConditions, deadline, kpi, employeeId) VALUES (?,?,?,?,?,?)",
+                    [title, description, successConditions, deadline, kpi, id]
                 );
                 if (result) {
                 } else {

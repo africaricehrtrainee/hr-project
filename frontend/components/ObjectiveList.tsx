@@ -162,8 +162,10 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
                                 className="absolute bottom-4 left-4"
                                 disabled={
                                     JSON.stringify(cache) ===
-                                    JSON.stringify(objectives)
-                                    // objectives.some((objective) => objective.title == "") ||
+                                        JSON.stringify(objectives) ||
+                                    objectives.some(
+                                        (objective) => objective.title == ""
+                                    )
                                 }
                                 onClick={() => {
                                     onSubmit();
