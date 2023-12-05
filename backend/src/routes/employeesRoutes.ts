@@ -365,7 +365,7 @@ router.get("/:id/supervisors", isAuthenticated, async (req, res) => {
     const { id } = req.params;
     try {
         const result = await dbService.query(
-            "SELECT employees.employeeId, employees.firstName, employees.lastName, employee_role.name as employeeRoleName, \nsupervisor_profile.firstName as supervisorFirstName, \nsupervisor_profile.lastName as supervisorLastName,\nsupervisor_profile.employeeId as supervisorId,\nmanager_profile.firstName as managerFirstName, \nmanager_profile.lastName as managerLastName,\nmanager_profile.employeeId as managerId\nFROM employees LEFT JOIN positions employee_role on employee_role.holderId = employees.employeeId LEFT JOIN positions supervisor_role on supervisor_role.superviseeId = employee_role.roleId LEFT JOIN employees supervisor_profile on supervisor_profile.employeeId = supervisor_role.holderId LEFT JOIN positions manager_role on supervisor_role.roleId = manager_role.superviseeId LEFT JOIN employees manager_profile on manager_role.holderId = manager_profile.employeeId WHERE employees.employeeId = ?;",
+            "SELECT profile.employeeId as employeeId, profile.firstName as firstName, profile.lastName as lastName, employee.name as employeeRoleName, supervisor.holderId as supervisorId, supervisorProfile.firstName as supervisorFirstName, supervisorProfile.lastName as supervisorLastName, manager.holderId as managerId, managerProfile.firstName as managerFirstName, managerProfile.lastName as managerLastName FROM positions employee JOIN employees profile on profile.employeeId = employee.holderId LEFT JOIN positions supervisor on employee.supervisorId = supervisor.roleId LEFT JOIN employees supervisorProfile on supervisor.holderId = supervisorProfile.employeeId LEFT JOIN positions manager on manager.roleId = supervisor.supervisorId LEFT JOIN employees managerProfile on manager.holderId = managerProfile.employeeId WHERE profile.employeeId = ?",
             [id]
         );
         const employee = result[0];
@@ -373,6 +373,22 @@ router.get("/:id/supervisors", isAuthenticated, async (req, res) => {
             return res.status(404).json({ error: "Employee not found" });
         }
         res.status(201).json(employee);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// Get supervisees for a specific employee by ID
+router.get("/:id/supervisees", isAuthenticated, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await dbService.query(
+            "SELECT roleId, holderId, name, matricule, firstName, lastName FROM positions JOIN employees ON employees.employeeId = positions.holderId WHERE supervisorId = (SELECT roleId FROM positions JOIN employees ON employees.employeeId = positions.holderId WHERE positions.holderId = ?)",
+            [id]
+        );
+
+        res.status(201).json(result);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Internal Server Error" });

@@ -10,6 +10,7 @@ export class LocalStrategy extends Strategy {
         super(
             { usernameField: "email", passwordField: "password" },
             async (email, password, done) => {
+                console.log("Login attempt");
                 this.dbService = dbService;
                 try {
                     if (!email || !password) {

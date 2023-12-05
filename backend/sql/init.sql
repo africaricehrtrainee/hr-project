@@ -73,9 +73,9 @@ CREATE TABLE
         roleId INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         holderId INT,
-        superviseeId INT,
+        supervisorId INT,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (holderId) REFERENCES employees (employeeId) ON UPDATE CASCADE ON DELETE SET NULL,
-        FOREIGN KEY (superviseeId) REFERENCES positions (roleId) ON UPDATE CASCADE ON DELETE SET NULL
+        FOREIGN KEY (supervisorId) REFERENCES positions (roleId) ON UPDATE CASCADE ON DELETE SET NULL
     );

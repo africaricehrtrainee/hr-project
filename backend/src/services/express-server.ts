@@ -30,31 +30,38 @@ export class ExpressServer {
         this.app.use(morgan("dev"));
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
-        this.app.use(cors());
+        this.app.use(
+            cors({
+                origin: "http://localhost:3000",
+                credentials: true,
+            })
+        );
         this.app.use(
             session({
                 secret: "your-secret-key",
                 resave: false,
                 saveUninitialized: false,
+                cookie: { maxAge: 3600000, secure: false },
             })
         );
 
         this.app.use(passport.initialize());
         this.app.use(passport.session());
         passport.use(new LocalStrategy(this.dbService));
+
         passport.serializeUser((employee: any, done) =>
             done(null, employee.employeeId)
         );
         passport.deserializeUser(async (id, done) => {
             try {
-                const user = await this.dbService.query(
+                const result = await this.dbService.query(
                     "SELECT * FROM employees WHERE employeeId = ? AND deletedAt IS NULL",
                     [id]
                 );
-                if (!user) {
+                if (!result[0]) {
                     done(null, false);
                 } else {
-                    done(null, user);
+                    done(null, result[0]);
                 }
             } catch (err) {
                 done(err);

@@ -7,21 +7,33 @@ const router = express.Router();
 router.post(
     "/login",
     passport.authenticate("local"),
-    (req: Request, res: Response) => {
-        res.json({ message: "Login successful", user: req.user });
+    (req: Request, res: Response, next: NextFunction) => {
+        if (req.user) {
+            req.logIn(req.user, function (error) {
+                if (error) return next(error);
+                console.log("Successfully login");
+                res.json({ message: "Login successful", user: req.user });
+            });
+        } else {
+            res.status(401).json("An error occured when logging in");
+        }
     }
 );
 
 router.get("/session", (req: Request, res: Response) => {
+    console.log("sessioning");
     if (req.isAuthenticated()) {
         res.json(req.user);
     } else {
-        res.status(500).json("Unauthorized");
+        res.status(401).json("Unauthorized");
     }
 });
 
-router.get("/logout", (req: Request, res: Response) => {
-    req.logout((err: any) => res.status(401).json("An error occured: " + err));
+router.get("/logout", (req: Request, res: Response, next: NextFunction) => {
+    req.logout((err: any) => {
+        if (err) return next(err);
+        res.status(201).json("Succesfully logged out.");
+    });
 });
 
 router.get("/profile", isAuthenticated, (req: Request, res: Response) => {
@@ -36,7 +48,7 @@ export function isAuthenticated(
     res: Response,
     next: NextFunction
 ): void {
-    if (!req.isAuthenticated()) {
+    if (req.isAuthenticated()) {
         return next();
     }
 

@@ -2,12 +2,11 @@
 
 import Button from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Selector";
 import { useAuth } from "@/hooks/useAuth";
-import { Icon } from "@iconify/react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { SyntheticEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 
 export default function Home() {
     const [loading, setLoading] = useState<boolean>(false);
@@ -22,19 +21,20 @@ export default function Home() {
         setLoading(true);
         e.preventDefault();
         axios
-            .post("http://localhost:4000/api/auth/login", {
+            .post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
                 email,
                 password,
             })
             .then((response) => {
+                console.log(response);
                 if (response.data.user) {
                     setUser(response.data.user);
-                    console.log(response.data.user);
-                    router.push(`/objectives/20`);
+                    router.push(`/`);
                 } else {
                     alert("Incorrect e-mail or password");
                 }
             })
+            .catch((err: any) => console.log(error))
             .finally(() => {
                 setLoading(false);
             });
@@ -62,6 +62,7 @@ export default function Home() {
                             type="email"
                             required
                             className=""
+                            name="email"
                             placeholder="Enter your email address"
                             value={email}
                             onChange={(e: any) => setEmail(e.target.value)}
@@ -73,6 +74,7 @@ export default function Home() {
                             type="password"
                             required
                             className=""
+                            name="password"
                             placeholder="Enter your password"
                             value={password}
                             onChange={(e: any) => setPassword(e.target.value)}

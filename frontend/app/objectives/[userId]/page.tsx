@@ -11,7 +11,7 @@ import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import { NewSelfEvaluation } from "@/components/NewSelfEvaluation";
 import { NewEvaluation } from "@/components/NewEvaluation";
-import { ProtectedRoute, useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 export interface EmployeeResult {
     employeeId: number;
@@ -184,13 +184,17 @@ export default function Objectives({ params }: { params: { userId: string } }) {
             .catch((err) => console.log(err));
     }
 
-    useEffect(() => {
+    function init() {
         fetchUser();
         fetchObjectives();
         fetchComments();
         fetchEvaluations();
-    }, []);
+    }
 
+    useEffect(() => {
+        init();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     useEffect(() => {
         const arr = objectivesData.map((a) => ({ ...a }));
         setObjectives(arr);
@@ -212,100 +216,93 @@ export default function Objectives({ params }: { params: { userId: string } }) {
     }, [user, employee]);
 
     return (
-        <ProtectedRoute>
-            <main className="flex min-h-screen flex-col items-start justify-start gap-2 p-8">
-                {objectives !== null &&
-                employee !== null &&
-                comments !== null ? (
-                    evaluations != null &&
-                    user &&
-                    employee && (
-                        <>
-                            {/* Top Row */}
-                            <div className="flex w-full gap-2 transition-all">
-                                {/* Shows the different steps of the evaluation process and allows navigation between them */}
-                                <Schedule
-                                    setSelected={setPanel}
-                                    selected={panel}
-                                />
+        // <ProtectedRoute>
+        <main className="flex min-h-screen flex-col items-start justify-start gap-2 p-8">
+            {objectives !== null && employee !== null && comments !== null ? (
+                evaluations != null &&
+                user &&
+                employee && (
+                    <>
+                        {/* Top Row */}
+                        <div className="flex w-full gap-2 transition-all">
+                            {/* Shows the different steps of the evaluation process and allows navigation between them */}
+                            <Schedule setSelected={setPanel} selected={panel} />
 
-                                {/* Shows profile card with supervisor */}
-                                {employee && <Profile user={employee} />}
+                            {/* Shows profile card with supervisor */}
+                            {employee && <Profile user={employee} />}
+                        </div>
+                        {/* Main row */}
+                        {panel == 0 && (
+                            <div className="flex w-full gap-2 transition-all">
+                                {/* Sidebar with objective list */}
+                                <ObjectiveList
+                                    user={user}
+                                    employee={employee}
+                                    // @ts-expect-error
+                                    setObjectives={setObjectives}
+                                    onSubmit={postObjectives}
+                                    objectives={objectives}
+                                    cache={objectivesData}
+                                    selectedObjective={selectedObjective}
+                                    setSelectedObjective={setSelectedObjective}
+                                />
+                                {/* Main objective form */}
+                                <NewObjective
+                                    user={user}
+                                    employee={employee}
+                                    selectedObjective={selectedObjective}
+                                    objectives={objectives}
+                                    // @ts-expect-error
+                                    setObjectives={setObjectives}
+                                    onMark={markObjective}
+                                />
+                                {/* List of comments of the supervisor */}
+                                <CommentList
+                                    user={user}
+                                    employee={employee}
+                                    objectives={objectives}
+                                    selectedObjective={selectedObjective}
+                                    // @ts-expect-error
+                                    setComments={setComments}
+                                    comments={comments}
+                                    cache={commentsData}
+                                    fetch={fetchComments}
+                                />
                             </div>
-                            {/* Main row */}
-                            {panel == 0 && (
-                                <div className="flex w-full gap-2 transition-all">
-                                    {/* Sidebar with objective list */}
-                                    <ObjectiveList
-                                        user={user}
-                                        employee={employee}
-                                        // @ts-expect-error
-                                        setObjectives={setObjectives}
-                                        onSubmit={postObjectives}
-                                        objectives={objectives}
-                                        cache={objectivesData}
-                                        selectedObjective={selectedObjective}
-                                        setSelectedObjective={
-                                            setSelectedObjective
-                                        }
-                                    />
-                                    {/* Main objective form */}
-                                    <NewObjective
-                                        user={user}
-                                        employee={employee}
-                                        selectedObjective={selectedObjective}
-                                        objectives={objectives}
-                                        // @ts-expect-error
-                                        setObjectives={setObjectives}
-                                        onMark={markObjective}
-                                    />
-                                    {/* List of comments of the supervisor */}
-                                    <CommentList
-                                        user={user}
-                                        employee={employee}
-                                        objectives={objectives}
-                                        selectedObjective={selectedObjective}
-                                        // @ts-expect-error
-                                        setComments={setComments}
-                                        comments={comments}
-                                        cache={commentsData}
-                                        fetch={fetchComments}
-                                    />
-                                </div>
-                            )}
-                            {panel == 1 && (
-                                <div className="flex w-full gap-2 transition-all">
-                                    {/* Self evaluation form */}
-                                    <NewSelfEvaluation
-                                        evaluations={evaluations}
-                                        cache={evaluationsData}
-                                        user={user}
-                                        employee={employee}
-                                        // @ts-expect-error
-                                        setEvaluations={setEvaluations}
-                                        onSubmit={postEvaluations}
-                                        employeeId={params.userId}
-                                    />
-                                    {/* Superior evaluation form */}
-                                    <NewEvaluation
-                                        evaluations={evaluations}
-                                        cache={evaluationsData}
-                                        user={user}
-                                        employee={employee}
-                                        // @ts-expect-error
-                                        setEvaluations={setEvaluations}
-                                        onSubmit={postEvaluations}
-                                        employeeId={params.userId}
-                                    />
-                                </div>
-                            )}
-                        </>
-                    )
-                ) : (
-                    <></>
-                )}
-            </main>
-        </ProtectedRoute>
+                        )}
+                        {panel == 1 && (
+                            <div className="flex w-full gap-2 transition-all">
+                                {/* Self evaluation form */}
+                                <NewSelfEvaluation
+                                    evaluations={evaluations}
+                                    cache={evaluationsData}
+                                    user={user}
+                                    employee={employee}
+                                    // @ts-expect-error
+                                    setEvaluations={setEvaluations}
+                                    onSubmit={postEvaluations}
+                                    employeeId={params.userId}
+                                />
+                                {/* Superior evaluation form */}
+                                <NewEvaluation
+                                    evaluations={evaluations}
+                                    cache={evaluationsData}
+                                    user={user}
+                                    employee={employee}
+                                    // @ts-expect-error
+                                    setEvaluations={setEvaluations}
+                                    onSubmit={postEvaluations}
+                                    employeeId={params.userId}
+                                />
+                            </div>
+                        )}
+                    </>
+                )
+            ) : (
+                <></>
+            )}
+        </main>
+        // </ProtectedRoute>
     );
 }
 

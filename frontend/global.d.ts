@@ -54,6 +54,7 @@ interface Position {
     updatedAt: string;
 }
 
+// Evaluation Table Interface
 interface Evaluation {
     status: "draft" | "sent";
     evaluationId: number;

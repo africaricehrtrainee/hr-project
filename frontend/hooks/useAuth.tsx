@@ -6,7 +6,8 @@ import React, {
     ReactNode,
 } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import Cookies from "js-cookie"; // Import js-cookie
 
 interface AuthContextType {
     user: Employee | null;
@@ -17,35 +18,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
-    children: ReactNode; // Use ReactNode to include children prop
+    children: ReactNode;
 }
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const [user, setUser] = useState<Employee | null>(null);
-    const router = useRouter();
-    useEffect(() => {
-        // Check session on initial load
-        axios
-            .get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/session`)
-            .then((response) => {
-                setUser(response.data.user);
-            })
-            .catch(() => setUser(null));
-    }, []);
-
-    const logout = async () => {
-        // Implement logout logic
-        setUser(null);
-        await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`);
-    };
-
-    return (
-        <AuthContext.Provider value={{ user, logout, setUser }}>
-            {children}
-        </AuthContext.Provider>
-    );
-};
-
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === undefined) {
@@ -53,25 +27,50 @@ export const useAuth = () => {
     }
     return context;
 };
-
-interface ProtectedRouteProps {
-    children: React.ReactNode;
-}
-
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    const user = useAuth();
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+    const [user, setUser] = useState<Employee | null>(null);
     const router = useRouter();
+    const pathName = usePathname();
 
-    // Redirect to login if user is not authenticated
     useEffect(() => {
-        if (!user.user) {
+        // Check session using cookies on initial load
+        axios
+            .get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/session`)
+            .then((response) => {
+                console.log("response", response.data);
+                if (response.data) {
+                    setUser(response.data);
+                }
+            })
+            .catch((err: any) => {
+                console.log(err);
+                if (pathName !== "/auth") {
+                    router.push("/auth");
+                }
+                setUser(null);
+            }); // Get the user cookie
+    }, [pathName, router]);
+
+    useEffect(() => {
+        console.log("user", user);
+    }, [user]);
+
+    const logout = async () => {
+        // Implement logout
+        try {
+            setUser(null);
+            await axios.get(
+                `${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`
+            );
             router.push("/auth"); // Redirect to your login page
+        } catch (err: any) {
+            console.log(err);
         }
-    }, [user, router]);
+    };
 
-    if (!user) {
-        return null; // You can also display an access denied message here
-    }
-
-    return <>{children}</>;
+    return (
+        <AuthContext.Provider value={{ user, logout, setUser }}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
