@@ -1,4 +1,4 @@
-// src/routes/comments.js
+// src/routes/commentRoutes.ts
 import express from "express";
 import { DbService } from "./../services/db-service";
 import { isAuthenticated } from "./authRoutes";

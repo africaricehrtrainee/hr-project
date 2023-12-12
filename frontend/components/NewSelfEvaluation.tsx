@@ -112,9 +112,33 @@ export function NewSelfEvaluation({
                         )}
                     </div>
                     <div className="mt-2 h-full w-full">
-                        <p className="text-2xl font-bold text-zinc-700">
-                            Your self-evaluation
-                        </p>
+                        <div className="flex items-center justify-between">
+                            <p className="text-2xl font-bold text-zinc-700">
+                                {employee.firstName.split(" ")[0]}&apos;s
+                                self-evaluation
+                            </p>
+                            <div className="absolute right-4 top-4 flex flex-col items-end justify-center rounded-md border border-zinc-100 p-2 text-end">
+                                <p className="text-[10px] font-bold text-zinc-400">
+                                    Estimated total grade
+                                </p>
+                                <p className="text-2xl font-bold text-zinc-700">
+                                    {(evaluations[index].respectRating ?? 0) +
+                                        (evaluations[index].efficiencyRating ??
+                                            0) +
+                                        (evaluations[index].commitmentRating ??
+                                            0) +
+                                        (evaluations[index].initiativeRating ??
+                                            0) +
+                                        (evaluations[index].leadershipRating ??
+                                            0) +
+                                        (evaluations[index].competencyRating ??
+                                            0)}
+                                    <span className="text-xs font-bold text-zinc-400">
+                                        /30
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
                         <form className="mt-1 grid w-full grid-cols-2 gap-4 pt-2">
                             <div className="flex flex-col gap-3">
                                 {metrics.slice(0, 3).map((metric) => (
@@ -144,47 +168,25 @@ export function NewSelfEvaluation({
                                                     })
                                                 }
                                                 className={
-                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-red-300 hover:text-red-50 gap-1" +
+                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-green-300 hover:text-green-50 gap-1" +
                                                     ` ${
                                                         evaluations[index][
                                                             metric.rating
                                                         ] == 1
-                                                            ? "bg-red-400 text-red-50 border-transparent"
-                                                            : " text-red-500 bg-red-100 border-red-300"
+                                                            ? "bg-green-400 text-green-50 border-transparent"
+                                                            : " text-green-500 bg-green-100 border-green-300"
                                                     }`
                                                 }
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M19 15h4V3h-4m-4 0H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2a2 2 0 0 0 2 2h6.31l-.95 4.57c-.02.1-.03.2-.03.31c0 .42.17.79.44 1.06L9.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V5a2 2 0 0 0-2-2Z"
-                                                    />
-                                                </svg>
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M19 15h4V3h-4m-4 0H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2a2 2 0 0 0 2 2h6.31l-.95 4.57c-.02.1-.03.2-.03.31c0 .42.17.79.44 1.06L9.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V5a2 2 0 0 0-2-2Z"
-                                                    />
-                                                </svg>
+                                                1
                                             </button>
                                             <button
                                                 type="button"
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.employeeId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -196,36 +198,25 @@ export function NewSelfEvaluation({
                                                     })
                                                 }
                                                 className={
-                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-red-300 hover:text-red-50 gap-1" +
+                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-green-300 hover:text-green-50 gap-1" +
                                                     ` ${
                                                         evaluations[index][
                                                             metric.rating
                                                         ] == 2
-                                                            ? "bg-red-400 text-red-50 border-transparent"
-                                                            : " text-red-500 bg-red-100 border-red-300"
+                                                            ? "bg-green-400 text-green-50 border-transparent"
+                                                            : " text-green-500 bg-green-100 border-green-300"
                                                     }`
                                                 }
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M19 15h4V3h-4m-4 0H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2a2 2 0 0 0 2 2h6.31l-.95 4.57c-.02.1-.03.2-.03.31c0 .42.17.79.44 1.06L9.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V5a2 2 0 0 0-2-2Z"
-                                                    />
-                                                </svg>
+                                                2
                                             </button>
                                             <button
                                                 type="button"
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.employeeId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -237,38 +228,25 @@ export function NewSelfEvaluation({
                                                     })
                                                 }
                                                 className={
-                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-orange-300 hover:text-orange-50 gap-1" +
+                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-green-300 hover:text-green-50 gap-1" +
                                                     ` ${
                                                         evaluations[index][
                                                             metric.rating
                                                         ] == 3
-                                                            ? "bg-orange-400 text-orange-50 border-transparent"
-                                                            : " text-orange-500 bg-orange-100 border-orange-300"
+                                                            ? "bg-green-400 text-green-50 border-transparent"
+                                                            : " text-green-500 bg-green-100 border-green-300"
                                                     }`
                                                 }
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 20 20"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        fill-rule="evenodd"
-                                                        d="M1 10a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H2a1 1 0 0 1-1-1Z"
-                                                        clip-rule="evenodd"
-                                                    />
-                                                </svg>
+                                                3
                                             </button>
                                             <button
                                                 type="button"
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.employeeId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -290,26 +268,15 @@ export function NewSelfEvaluation({
                                                     }`
                                                 }
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M23 10a2 2 0 0 0-2-2h-6.32l.96-4.57c.02-.1.03-.21.03-.32c0-.41-.17-.79-.44-1.06L14.17 1L7.59 7.58C7.22 7.95 7 8.45 7 9v10a2 2 0 0 0 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2M1 21h4V9H1v12Z"
-                                                    />
-                                                </svg>
+                                                4
                                             </button>
                                             <button
                                                 type="button"
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.employeeId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -331,28 +298,7 @@ export function NewSelfEvaluation({
                                                     }`
                                                 }
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M23 10a2 2 0 0 0-2-2h-6.32l.96-4.57c.02-.1.03-.21.03-.32c0-.41-.17-.79-.44-1.06L14.17 1L7.59 7.58C7.22 7.95 7 8.45 7 9v10a2 2 0 0 0 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2M1 21h4V9H1v12Z"
-                                                    />
-                                                </svg>
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M23 10a2 2 0 0 0-2-2h-6.32l.96-4.57c.02-.1.03-.21.03-.32c0-.41-.17-.79-.44-1.06L14.17 1L7.59 7.58C7.22 7.95 7 8.45 7 9v10a2 2 0 0 0 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2M1 21h4V9H1v12Z"
-                                                    />
-                                                </svg>
+                                                5
                                             </button>
                                         </div>
 
@@ -415,47 +361,25 @@ export function NewSelfEvaluation({
                                                     })
                                                 }
                                                 className={
-                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-red-300 hover:text-red-50 gap-1" +
+                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-green-300 hover:text-green-50 gap-1" +
                                                     ` ${
                                                         evaluations[index][
                                                             metric.rating
                                                         ] == 1
-                                                            ? "bg-red-400 text-red-50 border-transparent"
-                                                            : " text-red-500 bg-red-100 border-red-300"
+                                                            ? "bg-green-400 text-green-50 border-transparent"
+                                                            : " text-green-500 bg-green-100 border-green-300"
                                                     }`
                                                 }
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M19 15h4V3h-4m-4 0H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2a2 2 0 0 0 2 2h6.31l-.95 4.57c-.02.1-.03.2-.03.31c0 .42.17.79.44 1.06L9.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V5a2 2 0 0 0-2-2Z"
-                                                    />
-                                                </svg>
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M19 15h4V3h-4m-4 0H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2a2 2 0 0 0 2 2h6.31l-.95 4.57c-.02.1-.03.2-.03.31c0 .42.17.79.44 1.06L9.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V5a2 2 0 0 0-2-2Z"
-                                                    />
-                                                </svg>
+                                                1
                                             </button>
                                             <button
                                                 type="button"
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.employeeId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -467,36 +391,25 @@ export function NewSelfEvaluation({
                                                     })
                                                 }
                                                 className={
-                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-red-300 hover:text-red-50 gap-1" +
+                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-green-300 hover:text-green-50 gap-1" +
                                                     ` ${
                                                         evaluations[index][
                                                             metric.rating
                                                         ] == 2
-                                                            ? "bg-red-400 text-red-50 border-transparent"
-                                                            : " text-red-500 bg-red-100 border-red-300"
+                                                            ? "bg-green-400 text-green-50 border-transparent"
+                                                            : " text-green-500 bg-green-100 border-green-300"
                                                     }`
                                                 }
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M19 15h4V3h-4m-4 0H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2a2 2 0 0 0 2 2h6.31l-.95 4.57c-.02.1-.03.2-.03.31c0 .42.17.79.44 1.06L9.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V5a2 2 0 0 0-2-2Z"
-                                                    />
-                                                </svg>
+                                                2
                                             </button>
                                             <button
                                                 type="button"
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.employeeId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -508,38 +421,25 @@ export function NewSelfEvaluation({
                                                     })
                                                 }
                                                 className={
-                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-orange-300 hover:text-orange-50 gap-1" +
+                                                    "flex flex-1 items-center justify-center rounded-md border p-1 text-xs font-bold  transition-all hover:bg-green-300 hover:text-green-50 gap-1" +
                                                     ` ${
                                                         evaluations[index][
                                                             metric.rating
                                                         ] == 3
-                                                            ? "bg-orange-400 text-orange-50 border-transparent"
-                                                            : " text-orange-500 bg-orange-100 border-orange-300"
+                                                            ? "bg-green-400 text-green-50 border-transparent"
+                                                            : " text-green-500 bg-green-100 border-green-300"
                                                     }`
                                                 }
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 20 20"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        fill-rule="evenodd"
-                                                        d="M1 10a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H2a1 1 0 0 1-1-1Z"
-                                                        clip-rule="evenodd"
-                                                    />
-                                                </svg>
+                                                3
                                             </button>
                                             <button
                                                 type="button"
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.employeeId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -561,26 +461,15 @@ export function NewSelfEvaluation({
                                                     }`
                                                 }
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M23 10a2 2 0 0 0-2-2h-6.32l.96-4.57c.02-.1.03-.21.03-.32c0-.41-.17-.79-.44-1.06L14.17 1L7.59 7.58C7.22 7.95 7 8.45 7 9v10a2 2 0 0 0 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2M1 21h4V9H1v12Z"
-                                                    />
-                                                </svg>
+                                                4
                                             </button>
                                             <button
                                                 type="button"
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.employeeId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -602,28 +491,7 @@ export function NewSelfEvaluation({
                                                     }`
                                                 }
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M23 10a2 2 0 0 0-2-2h-6.32l.96-4.57c.02-.1.03-.21.03-.32c0-.41-.17-.79-.44-1.06L14.17 1L7.59 7.58C7.22 7.95 7 8.45 7 9v10a2 2 0 0 0 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2M1 21h4V9H1v12Z"
-                                                    />
-                                                </svg>
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        fill="currentColor"
-                                                        d="M23 10a2 2 0 0 0-2-2h-6.32l.96-4.57c.02-.1.03-.21.03-.32c0-.41-.17-.79-.44-1.06L14.17 1L7.59 7.58C7.22 7.95 7 8.45 7 9v10a2 2 0 0 0 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2M1 21h4V9H1v12Z"
-                                                    />
-                                                </svg>
+                                                5
                                             </button>
                                         </div>
 
@@ -660,7 +528,7 @@ export function NewSelfEvaluation({
                             </div>
                         </form>
                         {user.employeeId == evaluations[index].authorId && (
-                            <div className="absolute right-4 top-4 flex w-full items-center justify-end gap-2">
+                            <div className="absolute bottom-4 right-4 flex w-full items-center justify-end gap-2">
                                 <Button
                                     disabled={
                                         JSON.stringify(cache) ===
@@ -680,25 +548,20 @@ export function NewSelfEvaluation({
                                 </Button>
                                 <Button
                                     disabled={
-                                        evaluations.every(
-                                            (objective) =>
-                                                objective.status == "sent"
-                                        ) ||
-                                        evaluations.some(
-                                            (evaluations) =>
-                                                !evaluations.efficiency ||
-                                                !evaluations.efficiencyRating ||
-                                                !evaluations.competency ||
-                                                !evaluations.competencyRating ||
-                                                !evaluations.commitment ||
-                                                !evaluations.commitmentRating ||
-                                                !evaluations.initiative ||
-                                                !evaluations.initiativeRating ||
-                                                !evaluations.respect ||
-                                                !evaluations.respectRating ||
-                                                !evaluations.leadership ||
-                                                !evaluations.leadershipRating
-                                        )
+                                        evaluations[index].status == "sent" ||
+                                        !evaluations[index].efficiency ||
+                                        !evaluations[index].efficiencyRating ||
+                                        !evaluations[index].competency ||
+                                        !evaluations[index].competencyRating ||
+                                        !evaluations[index].commitment ||
+                                        !evaluations[index].commitmentRating ||
+                                        !evaluations[index].initiative ||
+                                        !evaluations[index].initiativeRating ||
+                                        !evaluations[index].respect ||
+                                        !evaluations[index].respectRating ||
+                                        !evaluations[index].leadership ||
+                                        !evaluations[index].leadershipRating
+
                                         // objectives.some((objective) => objective.title == "") ||
                                     }
                                     onClick={() => {
@@ -721,16 +584,14 @@ export function NewSelfEvaluation({
                             </div>
                         )}
                     </div>
+                    <div className=""></div>
                 </>
             ) : (
                 <>
                     <div className="flex h-full w-full flex-col items-center justify-center gap-4 text-zinc-300">
-                        <Icon
-                            icon="icon-park-solid:thinking-problem"
-                            fontSize={64}
-                        />
+                        <Icon icon="iconamoon:pen-fill" fontSize={64} />
                         <h1 className="text-2xl font-bold">
-                            A self-evaluation has not been made yet.
+                            An evaluation has not been made yet.
                         </h1>
                         {user.employeeId == employee.employeeId && (
                             <Button
@@ -747,7 +608,7 @@ export function NewSelfEvaluation({
                                         const arr = [...prev];
                                         arr.push({
                                             authorId: user.employeeId,
-                                            employeeId: user.employeeId,
+                                            employeeId: employee.employeeId,
                                             commitment: null,
                                             commitmentRating: null,
                                             competency: null,

@@ -81,6 +81,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                     setObjectivesData([...response.data]);
                 } else {
                     console.log(response);
+                    setObjectivesData([]);
                 }
             })
             .catch((err) => console.log(err));
@@ -116,6 +117,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                 if (response.data[0].commentId) {
                     setcommentsData(response.data);
                 } else {
+                    setcommentsData([]);
                 }
             })
             .catch((err) => console.log(err));
@@ -145,7 +147,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                 }
 
                 // After posting/updating evaluations, fetch the updated list
-                alert("Evaluations updated successfully")
+                alert("Evaluations updated successfully");
                 await fetchEvaluations();
             }
         } catch (error) {
@@ -160,6 +162,9 @@ export default function Objectives({ params }: { params: { userId: string } }) {
             ); // Adjust the API endpoint
             console.log(response.data);
             setEvaluationsData(response.data);
+            if (!response.data) {
+                setEvaluationsData([]);
+            }
         } catch (error) {
             console.error("Error fetching evaluations:", error);
         }
@@ -180,7 +185,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
             .then((response) => {
                 if (response.status == 201) {
                     fetchObjectives();
-                    alert("Objectives updated successfully")
+                    alert("Objectives updated successfully");
                 }
             })
             .catch((err) => console.log(err));
@@ -230,6 +235,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                             {/* Shows the different steps of the evaluation process and allows navigation between them */}
                             <Schedule setSelected={setPanel} selected={panel} />
 
+                            <Evaluation />
                             {/* Shows profile card with supervisor */}
                             {employee && <Profile user={employee} />}
                         </div>
@@ -257,6 +263,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                                     // @ts-expect-error
                                     setObjectives={setObjectives}
                                     onMark={markObjective}
+                                    onGrade={postObjectives}
                                 />
                                 {/* List of comments of the supervisor */}
                                 <CommentList
@@ -375,24 +382,124 @@ function Profile({ user }: { user: EmployeeResult }) {
 }
 
 function Evaluation() {
+    const [step, setStep] = useState<number>(0);
     return (
-        <div className="flex w-[150px] flex-col items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white p-4 text-center shadow-sm transition-all">
-            <Chip variant="alternate">
-                360 Evaluation
-                <Icon
-                    icon="mingcute:target-fill"
-                    className="ml-1"
-                    fontSize={14}
-                />
-            </Chip>
-            <Button className="rounded-full" variant="alternate">
-                Access
-                <Icon
-                    icon="mingcute:target-fill"
-                    className="ml-1"
-                    fontSize={14}
-                />
-            </Button>
+        <div className="flex w-full flex-1 items-center justify-between rounded-md border border-zinc-200 bg-white p-4 text-center shadow-sm transition-all">
+            <div className="flex flex-col items-start justify-start gap-2">
+                <Chip>
+                    Evaluation schedule
+                    <Icon
+                        icon="material-symbols:info"
+                        className="ml-1"
+                        fontSize={14}
+                    />
+                </Chip>
+                <div className="flex w-full items-center justify-start gap-2">
+                    <button
+                        onClick={() => setStep(0)}
+                        className={cn(
+                            "p-2 px-4 border border-transparent rounded-lg flex flex-col items-center justify-center text-xs font-semibold transition-all active:scale-95",
+                            `${
+                                step >= 0
+                                    ? "bg-zinc-700 text-zinc-100"
+                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-500"
+                            }`
+                        )}
+                    >
+                        <Icon
+                            icon="icon-park-solid:list-checkbox"
+                            className="ml-1"
+                            fontSize={14}
+                        />
+                        Objective submission
+                        <p className="-mt-0 text-[8px]">starts 5/11</p>
+                    </button>
+                    <div
+                        className={
+                            "h-2 w-2 rounded-full" +
+                            (step > 0 ? " bg-zinc-700" : " bg-zinc-300")
+                        }
+                    ></div>
+                    <div
+                        className={
+                            "h-2 w-2 rounded-full" +
+                            (step > 0 ? " bg-zinc-700" : " bg-zinc-300")
+                        }
+                    ></div>
+                    <div
+                        className={
+                            "h-2 w-2 rounded-full" +
+                            (step > 0 ? " bg-zinc-700" : " bg-zinc-300")
+                        }
+                    ></div>
+                    <button
+                        onClick={() => setStep(1)}
+                        className={cn(
+                            "p-2 px-4 border border-transparent rounded-lg flex flex-col items-center justify-center text-xs font-semibold transition-all active:scale-95",
+                            `${
+                                step >= 1
+                                    ? "bg-zinc-700 text-zinc-100"
+                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-500"
+                            }`
+                        )}
+                    >
+                        <Icon
+                            icon="icon-park-solid:thinking-problem"
+                            className="ml-1"
+                            fontSize={14}
+                        />
+                        Self-evaluation
+                        <p className="-mt-0 text-[8px]">starts 3/12</p>
+                    </button>
+                    <div
+                        className={
+                            "h-2 w-2 rounded-full" +
+                            (step > 1 ? " bg-zinc-700" : " bg-zinc-300")
+                        }
+                    ></div>
+                    <div
+                        className={
+                            "h-2 w-2 rounded-full" +
+                            (step > 1 ? " bg-zinc-700" : " bg-zinc-300")
+                        }
+                    ></div>
+                    <div
+                        className={
+                            "h-2 w-2 rounded-full" +
+                            (step > 1 ? " bg-zinc-700" : " bg-zinc-300")
+                        }
+                    ></div>
+                    <button
+                        onClick={() => setStep(2)}
+                        className={cn(
+                            "p-2 px-4 border border-transparent rounded-lg flex flex-col items-center justify-center text-xs font-semibold transition-all active:scale-95",
+                            `${
+                                step >= 2
+                                    ? "bg-zinc-700 text-zinc-100"
+                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-500"
+                            }`
+                        )}
+                    >
+                        <Icon
+                            icon="iconamoon:pen-fill"
+                            className="ml-1"
+                            fontSize={14}
+                        />
+                        Evaluation
+                        <p className="-mt-0 text-[8px]">starts 11/12</p>
+                    </button>
+                </div>
+            </div>
+            {/* <div className="flex h-full w-[250px] flex-col items-end justify-between p-0 text-end text-xs font-bold text-zinc-700">
+                <Button type="submit" variant="outline">
+                    Send
+                    <Icon
+                        icon="material-symbols:upload-sharp"
+                        className="ml-1"
+                        fontSize={14}
+                    />
+                </Button>
+            </div> */}
         </div>
     );
 }
@@ -407,7 +514,7 @@ function Schedule({
     return (
         <div className="flex flex-col items-start justify-center gap-2 rounded-md border border-zinc-200 bg-white p-4 shadow-sm transition-all">
             <Chip>
-                My evaluation
+                My performance
                 <Icon
                     icon="material-symbols:info"
                     className="ml-1"
@@ -444,7 +551,7 @@ function Schedule({
                         }`
                     )}
                 >
-                    Evaluation
+                    Personal evaluation
                     <Icon
                         icon="mdi:performance"
                         className="ml-1"

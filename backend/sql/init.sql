@@ -42,7 +42,7 @@ CREATE TABLE
 CREATE TABLE
     IF NOT EXISTS objectives (
         objectiveId INT AUTO_INCREMENT PRIMARY KEY,
-        status ENUM ('draft', 'sent', 'invalid', 'ok') DEFAULT 'draft',
+        status ENUM ('draft', 'sent', 'invalid', 'ok', 'graded') DEFAULT 'draft',
         employeeId INT,
         title TEXT NOT NULL,
         description TEXT,
@@ -51,6 +51,8 @@ CREATE TABLE
         kpi TEXT,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        grade INT,
+        comment TEXT,
         FOREIGN KEY (employeeId) REFERENCES employees (employeeId) ON UPDATE CASCADE ON DELETE SET NULL
     );
 
@@ -60,10 +62,12 @@ CREATE TABLE
         commentId INT AUTO_INCREMENT PRIMARY KEY,
         employeeId INT,
         objectiveId INT,
+        authorId INT,
         content TEXT NOT NULL,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (objectiveId) REFERENCES objectives (objectiveId) ON UPDATE CASCADE ON DELETE SET NULL,
+        FOREIGN KEY (authorId) REFERENCES employees (employeeId) ON UPDATE CASCADE ON DELETE SET NULL,
         FOREIGN KEY (employeeId) REFERENCES employees (employeeId) ON UPDATE CASCADE ON DELETE SET NULL
     );
 

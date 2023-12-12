@@ -1,5 +1,4 @@
-import { DbService } from "./db-service";
-// src/services/express-server.ts
+// Import necessary modules and dependencies
 import express, { Application } from "express";
 import session from "express-session";
 import passport from "passport";
@@ -8,47 +7,67 @@ import employeesRoutes from "../routes/employeesRoutes";
 import commentsRoutes from "../routes/commentsRoutes";
 import evaluationsRoutes from "../routes/evaluationsRoutes";
 import objectivesRoutes from "../routes/objectivesRoutes";
+import positionsRoutes from "../routes/positionsRoutes";
 import authRoutes from "../routes/authRoutes";
 import morgan from "morgan";
 import cors from "cors";
+import { DbService } from "./db-service";
 
+// Define a class named ExpressServer
 export class ExpressServer {
     private app: Application;
     private PORT: number;
     private dbService: DbService;
 
     constructor(port: number) {
+        // Create an Express application
         this.app = express();
         this.PORT = port;
+
+        // Initialize the DbService for database interactions
         this.dbService = new DbService();
 
+        // Configure middleware and routes
         this.configureMiddleware();
         this.configureRoutes();
     }
 
     private configureMiddleware(): void {
+        // Use middleware for request logging (Morgan)
         this.app.use(morgan("dev"));
+
+        // Enable JSON request body parsing
         this.app.use(express.json());
+
+        // Enable URL-encoded request body parsing
         this.app.use(express.urlencoded({ extended: true }));
+
+        // Configure CORS (Cross-Origin Resource Sharing)
         this.app.use(
             cors({
-                origin: "http://localhost:3000",
+                origin: "http://localhost:3000", // Specify the allowed origin for CORS
                 credentials: true,
             })
         );
+
+        // Configure session management with Express session
         this.app.use(
             session({
-                secret: "your-secret-key",
+                secret: "your-secret-key", // Secret key for session management
                 resave: false,
                 saveUninitialized: false,
-                cookie: { maxAge: 3600000, secure: false },
+                cookie: { maxAge: 3600000, secure: false }, // Session cookie settings
             })
         );
 
+        // Initialize and configure Passport.js for authentication
         this.app.use(passport.initialize());
         this.app.use(passport.session());
+
+        // Use a custom LocalStrategy for Passport.js authentication
         passport.use(new LocalStrategy(this.dbService));
 
+        // Serialize and deserialize user data for session management
         passport.serializeUser((employee: any, done) =>
             done(null, employee.employeeId)
         );
@@ -70,19 +89,17 @@ export class ExpressServer {
     }
 
     private configureRoutes(): void {
-        // this.app.use((req, res, next) => {
-        //     setTimeout(() => {
-        //         next();
-        //     }, 2000);
-        // });
+        // Define and use various API routes
         this.app.use("/api/employees", employeesRoutes);
         this.app.use("/api/comments", commentsRoutes);
         this.app.use("/api/evaluations", evaluationsRoutes);
         this.app.use("/api/objectives", objectivesRoutes);
+        this.app.use("/api/positions", positionsRoutes);
         this.app.use("/api/auth", authRoutes);
     }
 
     public start(): void {
+        // Start the Express application and listen on the specified port
         this.app.listen(this.PORT, () => {
             console.log(
                 `API server is running on http://localhost:${this.PORT}`

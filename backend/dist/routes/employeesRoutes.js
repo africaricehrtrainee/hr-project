@@ -22,7 +22,7 @@ const router = express_1.default.Router();
 const dbService = new db_service_1.DbService();
 // Route : api/employees
 // Create a new employee
-router.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/", authRoutes_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e;
     try {
         console.log(req.body);
@@ -85,8 +85,8 @@ router.get("/:id", authRoutes_1.isAuthenticated, (req, res) => __awaiter(void 0,
         res.status(500).json({ error: "Internal Server Error" });
     }
 }));
-router.post("/:id/objectives", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
+router.post("/:id/objectives", authRoutes_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _f, _g, _h, _j, _k, _l;
     try {
         const { id } = req.params;
         const { objectives } = req.body;
@@ -112,27 +112,15 @@ router.post("/:id/objectives", (req, res) => __awaiter(void 0, void 0, void 0, f
             const successConditions = (_j = objective.successConditions) !== null && _j !== void 0 ? _j : null;
             const deadline = (_k = objective.deadline) !== null && _k !== void 0 ? _k : null;
             const kpi = (_l = objective.kpi) !== null && _l !== void 0 ? _l : null;
-            const efficiency = (_m = objective.efficiency) !== null && _m !== void 0 ? _m : null;
-            const competency = (_o = objective.competency) !== null && _o !== void 0 ? _o : null;
-            const commitment = (_p = objective.commitment) !== null && _p !== void 0 ? _p : null;
-            const initiative = (_q = objective.initiative) !== null && _q !== void 0 ? _q : null;
-            const respect = (_r = objective.respect) !== null && _r !== void 0 ? _r : null;
-            const leadership = (_s = objective.leadership) !== null && _s !== void 0 ? _s : null;
             // Find if objective already exists
             if (objectiveId) {
-                const result = yield dbService.query("UPDATE objectives SET title = ?, status = ?, description = ?, successConditions = ?, deadline = ?, kpi = ?, efficiency = ?, competency = ?, commitment = ?, initiative = ?, respect = ?, leadership = ? WHERE objectiveId = ?", [
+                const result = yield dbService.query("UPDATE objectives SET title = ?, status = ?, description = ?, successConditions = ?, deadline = ?, kpi = ? WHERE objectiveId = ?", [
                     title,
                     status,
                     description,
                     successConditions,
                     deadline,
                     kpi,
-                    efficiency,
-                    competency,
-                    commitment,
-                    initiative,
-                    respect,
-                    leadership,
                     objectiveId,
                 ]);
                 if (result) {
@@ -143,20 +131,7 @@ router.post("/:id/objectives", (req, res) => __awaiter(void 0, void 0, void 0, f
                 }
             }
             else {
-                const result = yield dbService.query("INSERT INTO objectives (title, description, successConditions, deadline, kpi, efficiency, competency, commitment, initiative, respect, leadership, employeeId) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", [
-                    title,
-                    description,
-                    successConditions,
-                    deadline,
-                    kpi,
-                    efficiency,
-                    competency,
-                    commitment,
-                    initiative,
-                    respect,
-                    leadership,
-                    id,
-                ]);
+                const result = yield dbService.query("INSERT INTO objectives (title, description, successConditions, deadline, kpi, employeeId) VALUES (?,?,?,?,?,?)", [title, description, successConditions, deadline, kpi, id]);
                 if (result) {
                 }
                 else {
@@ -265,7 +240,7 @@ router.get("/:id/evaluations", authRoutes_1.isAuthenticated, (req, res) => __awa
         res.status(500).send("Error retrieving evaluations");
     }
 }));
-router.get("/:id/objectives", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/:id/objectives", authRoutes_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const result = yield dbService.query("SELECT * from objectives WHERE employeeId = ?", [id]);
@@ -276,7 +251,7 @@ router.get("/:id/objectives", (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.status(500).json({ error: "Internal Server Error" });
     }
 }));
-router.get("/:id/comments", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/:id/comments", authRoutes_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const result = yield dbService.query("SELECT * from comments WHERE employeeId = ?", [id]);
@@ -287,7 +262,7 @@ router.get("/:id/comments", (req, res) => __awaiter(void 0, void 0, void 0, func
         res.status(500).json({ error: "Internal Server Error" });
     }
 }));
-router.post("/:id/comments", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/:id/comments", authRoutes_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         if (!req.body.content || !req.body.objectiveId || !req.body.content) {
@@ -332,7 +307,7 @@ router.get("/:id/supervisees", authRoutes_1.isAuthenticated, (req, res) => __awa
     }
 }));
 // Partially Update Employee Route (HTTP PATCH)
-router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.patch("/:id", authRoutes_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const updatedFields = req.body;
@@ -359,7 +334,7 @@ router.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 }));
 // Partially Update Employee Route (HTTP PATCH)
-router.delete("/:id/password", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete("/:id/password", authRoutes_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         // Fetch the existing employee record from the database

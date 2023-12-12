@@ -29,7 +29,7 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
     return (
         <>
             {user && (
-                <div className="relative flex h-[450px] w-[275px] flex-col items-start justify-start rounded-md border border-zinc-200 bg-white shadow-sm transition-all">
+                <div className="relative flex h-[500px] w-[275px] flex-col items-start justify-start rounded-md border border-zinc-200 bg-white shadow-sm transition-all">
                     <div className="flex w-full items-start justify-between p-4">
                         <Chip>
                             Objectives
@@ -61,6 +61,8 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
                                         leadership: null,
                                         createdAt: getCurrentMySQLDate(),
                                         updatedAt: getCurrentMySQLDate(),
+                                        grade: null,
+                                        comment: null,
                                     });
                                     setObjectives(arr);
                                 }}
@@ -96,6 +98,16 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
                                 >
                                     {" "}
                                     <div className="flex w-full items-center justify-between">
+                                        {objective.status === "graded" && (
+                                            <div className="flex items-center justify-center gap-1 whitespace-nowrap rounded-md bg-green-100 p-1 px-2 text-[8px] font-semibold text-green-500">
+                                                Graded
+                                                <Icon
+                                                    icon="carbon:send-alt-filled"
+                                                    className="ml-1"
+                                                    fontSize={10}
+                                                />
+                                            </div>
+                                        )}
                                         {objective.status === "draft" && (
                                             <div className="flex items-center justify-center gap-1 whitespace-nowrap rounded-md bg-zinc-300 p-1 px-2 text-[8px] font-semibold text-zinc-700">
                                                 Draft
@@ -127,7 +139,7 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
                                             </div>
                                         )}
                                         {objective.status === "ok" && (
-                                            <div className="flex items-center justify-center gap-1 whitespace-nowrap rounded-md bg-green-100 p-1 px-2 text-[8px] font-semibold text-green-500">
+                                            <div className="flex items-center justify-center gap-1 whitespace-nowrap rounded-md bg-blue-100 p-1 px-2 text-[8px] font-semibold text-blue-500">
                                                 OK
                                                 <Icon
                                                     icon="material-symbols:check"
@@ -184,7 +196,8 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
                                 disabled={
                                     objectives.every(
                                         (objective) =>
-                                            objective.status == "sent"
+                                            objective.status == "sent" ||
+                                            objective.status == "graded"
                                     ) ||
                                     objectives.some(
                                         (objective) =>
@@ -201,9 +214,10 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
                                         let arr = [...prev];
                                         for (const objective of arr) {
                                             objective.status =
-                                                objective.status == "draft"
-                                                    ? "sent"
-                                                    : objective.status;
+                                                objective.status == "ok" ||
+                                                objective.status == "graded"
+                                                    ? objective.status
+                                                    : "sent";
                                         }
                                         return arr;
                                     });

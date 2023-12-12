@@ -4,14 +4,13 @@ import express from "express";
 import { DbService } from "../services/db-service";
 import { isAuthenticated } from "./authRoutes";
 import { keygen } from "./util/utils";
-import { Comment, Objective } from "../global";
 
 const router = express.Router();
 const dbService = new DbService();
 
 // Route : api/employees
 // Create a new employee
-router.post("/", async (req, res) => {
+router.post("/", isAuthenticated, async (req, res) => {
     try {
         console.log(req.body);
         const email = req.body.email ?? null;
@@ -83,10 +82,10 @@ router.get("/:id", isAuthenticated, async (req, res) => {
     }
 });
 
-router.post("/:id/objectives", async (req, res) => {
+router.post("/:id/objectives", isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
-        const { objectives }: { objectives: Objective[] } = req.body;
+        const { objectives } = req.body;
 
         if (!objectives) {
             return res
@@ -94,7 +93,7 @@ router.post("/:id/objectives", async (req, res) => {
                 .json("Please include an objective list in your request.");
         }
 
-        const previous: Objective[] = await dbService.query(
+        const previous = await dbService.query(
             "SELECT * FROM objectives WHERE employeeId = ?",
             [id]
         );
@@ -102,9 +101,9 @@ router.post("/:id/objectives", async (req, res) => {
         console.log(previous);
 
         const arr = previous.filter(
-            (previousObjective) =>
+            (previousObjective: { objectiveId: any }) =>
                 !objectives.some(
-                    (objective) =>
+                    (objective: { objectiveId: any }) =>
                         objective.objectiveId == previousObjective.objectiveId
                 )
         );
@@ -127,11 +126,13 @@ router.post("/:id/objectives", async (req, res) => {
             const successConditions = objective.successConditions ?? null;
             const deadline = objective.deadline ?? null;
             const kpi = objective.kpi ?? null;
+            const grade = objective.grade ?? null;
+            const comment = objective.comment ?? null;
 
             // Find if objective already exists
             if (objectiveId) {
                 const result = await dbService.query(
-                    "UPDATE objectives SET title = ?, status = ?, description = ?, successConditions = ?, deadline = ?, kpi = ? WHERE objectiveId = ?",
+                    "UPDATE objectives SET title = ?, status = ?, description = ?, successConditions = ?, deadline = ?, kpi = ?, grade = ?, comment = ? WHERE objectiveId = ?",
                     [
                         title,
                         status,
@@ -139,6 +140,8 @@ router.post("/:id/objectives", async (req, res) => {
                         successConditions,
                         deadline,
                         kpi,
+                        grade,
+                        comment,
                         objectiveId,
                     ]
                 );
@@ -149,8 +152,17 @@ router.post("/:id/objectives", async (req, res) => {
                 }
             } else {
                 const result = await dbService.query(
-                    "INSERT INTO objectives (title, description, successConditions, deadline, kpi, employeeId) VALUES (?,?,?,?,?,?)",
-                    [title, description, successConditions, deadline, kpi, id]
+                    "INSERT INTO objectives (title, description, successConditions, deadline, kpi, grade, comment, employeeId) VALUES (?,?,?,?,?,?,?,?)",
+                    [
+                        title,
+                        description,
+                        successConditions,
+                        deadline,
+                        kpi,
+                        grade,
+                        comment,
+                        id,
+                    ]
                 );
                 if (result) {
                 } else {
@@ -281,7 +293,7 @@ router.get("/:id/evaluations", isAuthenticated, async (req, res) => {
     }
 });
 
-router.get("/:id/objectives", async (req, res) => {
+router.get("/:id/objectives", isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -297,7 +309,7 @@ router.get("/:id/objectives", async (req, res) => {
     }
 });
 
-router.get("/:id/comments", async (req, res) => {
+router.get("/:id/comments", isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -313,19 +325,29 @@ router.get("/:id/comments", async (req, res) => {
     }
 });
 
-router.post("/:id/comments", async (req, res) => {
+router.post("/:id/comments", isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (!req.body.content || !req.body.objectiveId || !req.body.content) {
+        if (
+            !req.body.content ||
+            !req.body.objectiveId ||
+            !req.body.content ||
+            !req.body.authorId
+        ) {
             return res
                 .status(400)
                 .json("Please include a comment in your request.");
         }
 
         const result = await dbService.query(
-            "INSERT INTO comments (employeeId, objectiveId, content) VALUES (?, ?, ?)",
-            [req.body.employeeId, req.body.objectiveId, req.body.content]
+            "INSERT INTO comments (employeeId, objectiveId, content, authorId) VALUES (?, ?, ?, ?)",
+            [
+                req.body.employeeId,
+                req.body.objectiveId,
+                req.body.content,
+                req.body.authorId,
+            ]
         );
 
         res.status(201).json("Successfully added comment.");
@@ -371,7 +393,7 @@ router.get("/:id/supervisees", isAuthenticated, async (req, res) => {
 });
 
 // Partially Update Employee Route (HTTP PATCH)
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
         const updatedFields = req.body;
@@ -408,8 +430,9 @@ router.patch("/:id", async (req, res) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 });
+
 // Partially Update Employee Route (HTTP PATCH)
-router.delete("/:id/password", async (req, res) => {
+router.delete("/:id/password", isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
 

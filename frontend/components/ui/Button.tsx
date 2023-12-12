@@ -14,6 +14,8 @@ const buttonVariants = cva(
                     "bg-green-100 shadow-none text-green-600 hover:bg-green-50 border-green-100",
                 alert: "bg-red-500 text-red-50 hover:bg-red-100 hover:text-red-700",
                 alternate: "bg-purple-800 text-purple-100 hover:bg-purple-700",
+                alternateOutline:
+                    "border-purple-300 text-purple-500 hover:border-purple-500",
             },
         },
         defaultVariants: {

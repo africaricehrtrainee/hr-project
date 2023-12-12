@@ -18,7 +18,7 @@ const SuperviseeList: React.FC<SuperviseeListProps> = ({ employees }) => {
     const router = useRouter();
 
     return (
-        <div className="flex h-[500px] w-[350px] flex-col items-start justify-start rounded-md border border-zinc-200 bg-white p-8 shadow-sm transition-all">
+        <div className="flex h-[500px] w-[500px] flex-col items-start justify-start rounded-md border border-zinc-200 bg-white p-4 shadow-sm transition-all">
             <div className="flex items-center justify-center gap-1 whitespace-nowrap rounded-md bg-green-100 p-1 px-2 text-[8px] font-semibold text-green-700">
                 Dashboard
                 <Icon
@@ -66,10 +66,13 @@ const SuperviseeList: React.FC<SuperviseeListProps> = ({ employees }) => {
                                     );
                                 }}
                                 className={cn(
-                                    "grid grid-cols-3 w-full relative items-center justify-start border-b border-t border-b-zinc-100 border-t-zinc-100 p-2 px-4 transition-all hover:bg-zinc-50"
+                                    "grid grid-cols-4 w-full relative items-center justify-start rounded-md border border-zinc-100 p-2 px-4 transition-all hover:bg-zinc-50"
                                 )}
                                 key={i}
                             >
+                                <div className="flex items-center justify-start">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-sm font-bold text-zinc-50">{employee.firstName.charAt(0) + employee.lastName.charAt(0)}</div>
+                                </div>
                                 <div className="flex flex-col items-start justify-center">
                                     <p className="text-[8px] font-medium text-zinc-300">
                                         LAST NAME

@@ -16,7 +16,7 @@ interface Employee {
 interface Objective {
     objectiveId: number;
     employeeId: number;
-    status: "draft" | "invalid" | "ok" | "sent";
+    status: "draft" | "invalid" | "ok" | "sent" | "graded";
     title: string | null;
     description: string | null;
     successConditions: string | null;
@@ -28,6 +28,8 @@ interface Objective {
     initiative: string | null;
     respect: string | null;
     leadership: string | null;
+    grade: number | null;
+    comment: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -47,13 +49,18 @@ interface Comment {
 interface Position {
     roleId: number;
     name: string;
-    holderId: number | null | undefined;
-    supervisorId: number | null | undefined;
-    assistantId: number | null | undefined;
+    holderId: number | null;
+    supervisorId: number | null;
+    firstName: string | null;
+    lastName: string | null;
     createdAt: string;
     updatedAt: string;
 }
 
+interface TreeNode {
+    position: Position;
+    children: TreeNode[];
+}
 // Evaluation Table Interface
 interface Evaluation {
     status: "draft" | "sent";

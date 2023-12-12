@@ -43,6 +43,7 @@ export default function Home() {
     useEffect(() => {
         console.log(error);
     }, [error]);
+
     return (
         <main className="flex min-h-screen flex-col items-center justify-center p-16">
             <div className="flex w-[320px] flex-col items-center gap-1 rounded-md border border-zinc-200 bg-white p-8 text-center shadow-sm">

@@ -133,44 +133,43 @@ export default function Navigation() {
                                 </svg>
                             </Link>
                         ))}
-                    {user.role == "hr" && (
-                        <a
-                            className={
-                                "rounded-full p-2 px-4 text-xs font-bold transition-all hover:bg-zinc-100 text-zinc-500 active:scale-90 flex items-center justify-center gap-1 group opacity-25 pointer-events-none" +
-                                ` ${
-                                    pathName == "/management" &&
-                                    "bg-zinc-100 text-zinc-800"
-                                }`
-                            }
+                    <Link
+                        href="/management"
+                        className={
+                            "rounded-full p-2 px-4 text-xs font-bold transition-all hover:bg-zinc-100 text-zinc-500 active:scale-90 flex items-center justify-center gap-1 group" +
+                            ` ${
+                                pathName == "/management" &&
+                                "bg-zinc-100 text-zinc-800"
+                            }`
+                        }
+                    >
+                        Organogram
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            className="transition-all group-hover:translate-x-1"
                         >
-                            Management
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                className="transition-all group-hover:translate-x-1"
-                            >
-                                <path
-                                    fill="currentColor"
-                                    d="m5.99 16.596l8.192-8.192H7.818v-2h9.778v9.778h-2V9.818L7.403 18.01L5.99 16.596Z"
-                                />
-                            </svg>
-                        </a>
-                    )}
+                            <path
+                                fill="currentColor"
+                                d="m5.99 16.596l8.192-8.192H7.818v-2h9.778v9.778h-2V9.818L7.403 18.01L5.99 16.596Z"
+                            />
+                        </svg>
+                    </Link>
                 </div>
             )}
 
             {user && (
                 <div className="ml-auto flex items-center justify-center gap-4">
-                    <Button onClick={() => {}} variant="outline">
+                    {/* <Button onClick={() => {}} variant="outline">
                         Inbox
                         <Icon
                             icon="mingcute:inbox-fill"
                             className="ml-1"
                             fontSize={14}
                         />
-                    </Button>
+                    </Button> */}
                     <Button
                         onClick={() => {
                             logout();

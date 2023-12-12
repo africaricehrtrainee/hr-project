@@ -11,6 +11,7 @@ import { Router } from "next/router";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import SuperviseeList from "@/components/SuperviseeList";
+import OrgChart from "@/components/OrgChart";
 
 export interface SuperviseeResult {
     roleId: number;
@@ -28,7 +29,7 @@ export default function Dashboard() {
     const { user } = useAuth();
     const router = useRouter();
 
-    async function fetchTeam() {
+    useEffect(() => {
         axios
             .get<SuperviseeResult[]>(
                 process.env.NEXT_PUBLIC_API_URL +
@@ -45,19 +46,16 @@ export default function Dashboard() {
                 }
             })
             .catch((err) => console.log(err));
-    }
-
-    useEffect(() => {
-        fetchTeam();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [user]);
 
     return (
-        <main className="flex h-full w-full flex-1 flex-col items-center justify-center">
-            {supervisees != null ? (
-                supervisees.length == 0 ? (
-                    <div className="flex w-full flex-1 items-center justify-center">
-                        <div className="flex h-full w-full flex-col items-center justify-center gap-4 text-zinc-300">
+        <main className="flex h-full w-full flex-1 items-center justify-center gap-4 p-8">
+            {supervisees && (
+                <>
+                    {supervisees.length > 0 ? (
+                        <SuperviseeList employees={supervisees} />
+                    ) : (
+                        <div className="flex flex-1 flex-col items-center justify-center gap-4 text-zinc-300">
                             <Icon icon="fluent:dust-20-filled" fontSize={64} />
                             <h1 className="text-2xl font-bold">
                                 Not much going on here yet.
@@ -79,12 +77,8 @@ export default function Dashboard() {
                                 />
                             </Button>
                         </div>
-                    </div>
-                ) : (
-                    <SuperviseeList employees={supervisees} />
-                )
-            ) : (
-                <></>
+                    )}
+                </>
             )}
         </main>
     );
