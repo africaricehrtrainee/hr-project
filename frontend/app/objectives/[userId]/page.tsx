@@ -233,7 +233,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                         {/* Top Row */}
                         <div className="flex w-full gap-2 transition-all">
                             {/* Shows the different steps of the evaluation process and allows navigation between them */}
-                            <Schedule setSelected={setPanel} selected={panel} />
+                            <Menu setSelected={setPanel} selected={panel} />
 
                             <Evaluation />
                             {/* Shows profile card with supervisor */}
@@ -401,8 +401,8 @@ function Evaluation() {
                             "p-2 px-4 border border-transparent rounded-lg flex flex-col items-center justify-center text-xs font-semibold transition-all active:scale-95",
                             `${
                                 step >= 0
-                                    ? "bg-zinc-700 text-zinc-100"
-                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-500"
+                                    ? "bg-green-100 text-green-600 border-green-300"
+                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-300"
                             }`
                         )}
                     >
@@ -417,19 +417,19 @@ function Evaluation() {
                     <div
                         className={
                             "h-2 w-2 rounded-full" +
-                            (step > 0 ? " bg-zinc-700" : " bg-zinc-300")
+                            (step > 0 ? " bg-green-300" : " bg-zinc-300")
                         }
                     ></div>
                     <div
                         className={
                             "h-2 w-2 rounded-full" +
-                            (step > 0 ? " bg-zinc-700" : " bg-zinc-300")
+                            (step > 0 ? " bg-green-300" : " bg-zinc-300")
                         }
                     ></div>
                     <div
                         className={
                             "h-2 w-2 rounded-full" +
-                            (step > 0 ? " bg-zinc-700" : " bg-zinc-300")
+                            (step > 0 ? " bg-green-300" : " bg-zinc-300")
                         }
                     ></div>
                     <button
@@ -438,8 +438,8 @@ function Evaluation() {
                             "p-2 px-4 border border-transparent rounded-lg flex flex-col items-center justify-center text-xs font-semibold transition-all active:scale-95",
                             `${
                                 step >= 1
-                                    ? "bg-zinc-700 text-zinc-100"
-                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-500"
+                                    ? "bg-green-100 text-green-600 border-green-300"
+                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-300"
                             }`
                         )}
                     >
@@ -454,19 +454,19 @@ function Evaluation() {
                     <div
                         className={
                             "h-2 w-2 rounded-full" +
-                            (step > 1 ? " bg-zinc-700" : " bg-zinc-300")
+                            (step > 1 ? " bg-green-300" : " bg-zinc-300")
                         }
                     ></div>
                     <div
                         className={
                             "h-2 w-2 rounded-full" +
-                            (step > 1 ? " bg-zinc-700" : " bg-zinc-300")
+                            (step > 1 ? " bg-green-300" : " bg-zinc-300")
                         }
                     ></div>
                     <div
                         className={
                             "h-2 w-2 rounded-full" +
-                            (step > 1 ? " bg-zinc-700" : " bg-zinc-300")
+                            (step > 1 ? " bg-green-300" : " bg-zinc-300")
                         }
                     ></div>
                     <button
@@ -475,8 +475,8 @@ function Evaluation() {
                             "p-2 px-4 border border-transparent rounded-lg flex flex-col items-center justify-center text-xs font-semibold transition-all active:scale-95",
                             `${
                                 step >= 2
-                                    ? "bg-zinc-700 text-zinc-100"
-                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-500"
+                                    ? "bg-green-100 text-green-600 border-green-300"
+                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-300"
                             }`
                         )}
                     >
@@ -504,7 +504,7 @@ function Evaluation() {
     );
 }
 
-function Schedule({
+function Menu({
     setSelected,
     selected,
 }: {
@@ -528,8 +528,8 @@ function Schedule({
                         "p-2 px-3 border border-transparent rounded-full flex items-center justify-center gap-1 text-xs font-semibold transition-all active:scale-95",
                         `${
                             selected == 0
-                                ? "bg-green-500 text-green-100"
-                                : "bg-green-100 text-green-500 hover:border-green-500"
+                                ? "bg-green-100 text-green-600 border-green-300"
+                                : "bg-zinc-100 text-zinc-500 hover:border-zinc-300"
                         }`
                     )}
                 >
@@ -546,8 +546,8 @@ function Schedule({
                         "p-2 px-3 border border-transparent rounded-full flex items-center justify-center gap-1 text-xs font-semibold transition-all active:scale-95",
                         `${
                             selected == 1
-                                ? "bg-green-500 text-green-100"
-                                : "bg-green-100 text-green-500 hover:border-green-500"
+                                ? "bg-green-100 text-green-600 border-green-300"
+                                : "bg-zinc-100 text-zinc-500 hover:border-zinc-300"
                         }`
                     )}
                 >
