@@ -6,13 +6,15 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState } from "react";
 import Modal from "./ui/Modal";
 import axios from "axios";
-import { EmployeeResult } from "@/app/objectives/[userId]/page";
+import {
+    selectActiveObjective,
+    useObjectivesDataStore,
+} from "@/app/objectives/[userId]/_store/useStore";
 
 interface CommentListProps {
     user: Employee;
     employee: EmployeeResult;
     objectives: Objective[];
-    selectedObjective: number;
     comments: Comment[];
     cache: Comment[];
     onMark: (ok?: boolean) => any;
@@ -23,17 +25,22 @@ export const CommentList: React.FC<CommentListProps> = ({
     user,
     employee,
     objectives,
-    selectedObjective,
     comments,
     cache,
     fetch,
 }) => {
+    const data = useObjectivesDataStore();
+    const selectedObjective = useObjectivesDataStore(selectActiveObjective);
+
     const [content, setContent] = useState<string | null>(null);
     const [submitLoading, setSubmitLoading] = useState<boolean>();
 
     function postComment(e: React.SyntheticEvent) {
         e.preventDefault();
         setSubmitLoading(true);
+        if (!selectedObjective) {
+            return null;
+        }
         axios
             .post(
                 process.env.NEXT_PUBLIC_API_URL +
@@ -43,7 +50,7 @@ export const CommentList: React.FC<CommentListProps> = ({
                 {
                     authorId: user.employeeId,
                     employeeId: employee.employeeId,
-                    objectiveId: objectives[selectedObjective].objectiveId,
+                    objectiveId: selectedObjective.objectiveId,
                     content,
                 }
             )
@@ -74,14 +81,14 @@ export const CommentList: React.FC<CommentListProps> = ({
                 </Button>
             </div>
 
-            {objectives && objectives[selectedObjective] && (
+            {objectives && selectedObjective && (
                 <>
                     <div className="scroll-hover flex h-full w-full flex-col-reverse overflow-y-scroll py-1">
                         {comments
                             .filter(
                                 (comment) =>
                                     comment.objectiveId ==
-                                    objectives[selectedObjective].objectiveId
+                                    selectedObjective.objectiveId
                             )
                             .sort((a, b) => {
                                 const dateA = new Date(a.updatedAt);

@@ -13,7 +13,6 @@ export class LocalStrategy extends Strategy {
         super(
             { usernameField: "email", passwordField: "password" },
             async (email, password, done) => {
-                console.log("Login attempt");
                 this.dbService = dbService;
 
                 try {
@@ -46,8 +45,6 @@ export class LocalStrategy extends Strategy {
                             message: "Invalid password",
                         });
                     }
-
-                    console.log(res);
 
                     // If authentication is successful, return the user object
                     return done(null, user);

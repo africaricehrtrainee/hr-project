@@ -1,41 +1,78 @@
-import nodemailer from "nodemailer";
+import emailjs from "@emailjs/nodejs";
+import { DbService } from "./db-service";
+import { Employee } from "../global";
 
-// Define a class named MailService
-class MailService {
-    private transporter: nodemailer.Transporter;
-
-    constructor() {
-        // Create a nodemailer transporter with your SMTP service configuration
-        this.transporter = nodemailer.createTransport({
-            service: "YourSMTPService", // Specify the SMTP service provider (e.g., 'Gmail')
-            auth: {
-                user: "your_email@example.com", // Your email address
-                pass: "your_password", // Your email password or app-specific password
+export default function sendMail({
+    title,
+    content,
+    recipients,
+}: {
+    title: string;
+    content: string;
+    recipients: string;
+}) {
+    emailjs
+        .send(
+            "service_swkr8dc",
+            "template_6ryb4f6",
+            {
+                title,
+                content,
+                recipients,
             },
-        });
-    }
-
-    // Define a method to send an email
-    async sendMail(to: string, subject: string, text: string, html?: string) {
-        try {
-            // Create an object with email options
-            const mailOptions: nodemailer.SendMailOptions = {
-                from: "your_email@example.com", // Sender's email address
-                to, // Recipient's email address
-                subject, // Email subject
-                text, // Plain text version of the email
-                html, // HTML version of the email (optional)
-            };
-
-            // Use the transporter to send the email
-            await this.transporter.sendMail(mailOptions);
-            console.log("Email sent successfully");
-        } catch (error) {
-            console.error("Error sending email:", error);
-            throw error; // Throw an error if there's a problem sending the email
-        }
-    }
+            {
+                publicKey: "8VojYnxF076zkbnHg",
+                privateKey: "n1u5laTNhfdUwaxmHyn3U", // optional, highly recommended for security reasons
+            }
+        )
+        .then(
+            (response) => {
+                console.log("SUCCESS!", response.status, response.text);
+            },
+            (err) => {
+                console.log("FAILED...", err);
+            }
+        );
 }
 
-// Export an instance of the MailService class
-export default new MailService();
+export async function mailEvaluationStep() {
+    const db = new DbService();
+    const employees: Employee[] = await db.query(
+        `SELECT email, firstName, lastName, matricule, employeeId, deletedAt, role FROM employees WHERE deletedAt is NULL ORDER BY lastName ASC`
+    );
+
+    if (employees.length < 1 || !employees) {
+        console.log("No employees have been found.");
+        return null;
+    }
+
+    const recipients = employees.reduce(
+        (previous, current) => previous + ";" + current.email,
+        ""
+    );
+    const currentStep: {
+        name: string;
+        message: string;
+        deadline: string;
+    }[] = await db.query(
+        `SELECT name, message, deadline FROM steps WHERE active IS TRUE`
+    );
+
+    if (!currentStep) {
+        console.log("No active performance step has been found");
+    }
+
+    const getCurrentDate = (): string => new Date().toISOString().split("T")[0];
+    const date = getCurrentDate();
+
+    console.log("Current date: " + date);
+    console.log("Active step of the evaluation: " + currentStep[0].deadline);
+
+    if (date === currentStep[0].deadline) {
+        sendMail({
+            title: "Update from AfricaRice HR",
+            content: `<h1>${currentStep[0].message}<h1>`,
+            recipients,
+        });
+    }
+}

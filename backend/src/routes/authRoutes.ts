@@ -14,7 +14,6 @@ router.post(
             // If authentication succeeds, log in the user
             req.logIn(req.user, function (error) {
                 if (error) return next(error);
-                console.log("Successfully login");
                 res.json({ message: "Login successful", user: req.user });
             });
         } else {
@@ -26,7 +25,6 @@ router.post(
 
 // Route to check user session
 router.get("/session", (req: Request, res: Response) => {
-    console.log("Checking session");
     if (req.isAuthenticated()) {
         // If user is authenticated, return user information
         res.json(req.user);

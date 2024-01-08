@@ -1,5 +1,4 @@
 "use client";
-import { EmployeeResult } from "@/app/objectives/[userId]/page";
 import Button from "@/components/ui/Button";
 import { getCurrentMySQLDate } from "@/util/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -83,7 +82,7 @@ export function NewSelfEvaluation({
         );
     }, [evaluations]);
     return (
-        <div className="relative flex min-h-[500px] flex-1 flex-col items-start justify-start rounded-md border border-zinc-200 bg-white p-4 shadow-sm transition-all">
+        <div className="relative flex h-[550px] w-[800px] flex-col items-start justify-start rounded-md border border-zinc-200 bg-white p-4 shadow-sm transition-all">
             {evaluations[index] &&
             ((user.employeeId !== evaluations[index].authorId &&
                 evaluations[index].status == "sent") ||
@@ -139,7 +138,7 @@ export function NewSelfEvaluation({
                                 </p>
                             </div>
                         </div>
-                        <form className="mt-1 grid w-full grid-cols-2 gap-4 pt-2">
+                        <form className="mt-4 grid w-full grid-cols-2 gap-4 pt-2">
                             <div className="flex flex-col gap-3">
                                 {metrics.slice(0, 3).map((metric) => (
                                     <div
@@ -589,9 +588,9 @@ export function NewSelfEvaluation({
             ) : (
                 <>
                     <div className="flex h-full w-full flex-col items-center justify-center gap-4 text-zinc-300">
-                        <Icon icon="iconamoon:pen-fill" fontSize={64} />
+                        <Icon icon="iconamoon:pen-fill" fontSize={48} />
                         <h1 className="text-2xl font-bold">
-                            An evaluation has not been made yet.
+                            A self-evaluation has not been made yet.
                         </h1>
                         {user.employeeId == employee.employeeId && (
                             <Button

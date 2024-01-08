@@ -2,57 +2,41 @@
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ObjectiveList from "@/components/ObjectiveList";
 import { NewObjective } from "../../../components/NewObjective";
-import { cn, getStep } from "@/util/utils";
+import { cn } from "@/util/utils";
 import { CommentList } from "../../../components/CommentList";
 import axios from "axios";
-import { useSearchParams } from "next/navigation";
 import { NewSelfEvaluation } from "@/components/NewSelfEvaluation";
 import { NewEvaluation } from "@/components/NewEvaluation";
 import { useAuth } from "@/hooks/useAuth";
-
-export interface EmployeeResult {
-    employeeId: number;
-    firstName: string;
-    lastName: string;
-    employeeRoleName: string;
-    supervisorId: number | null;
-    supervisorFirstName: string | null;
-    supervisorLastName: string | null;
-    managerId: number | null;
-    managerFirstName: string | null;
-    managerLastName: number | null;
-}
+import Modal from "@/components/ui/Modal";
+import EditStep from "@/components/EditStep";
+import {
+    selectActiveObjective,
+    selectActiveStep,
+    useObjectivesDataStore,
+} from "./_store/useStore";
 
 export default function Objectives({ params }: { params: { userId: string } }) {
-    const searchParams = useSearchParams();
-    const [panel, setPanel] = useState<number>(0);
-
+    const data = useObjectivesDataStore();
     const { user } = useAuth();
 
-    const [objectivesData, setObjectivesData] = useState<Objective[]>([]);
-    const [objectives, setObjectives] = useState<Objective[] | null>(null);
-    const [selectedObjective, setSelectedObjective] = useState<number>(0);
-
-    const [commentsData, setcommentsData] = useState<Comment[]>([]);
+    const [evaluations, setEvaluations] = useState<Evaluation[] | null>(null);
     const [comments, setComments] = useState<Comment[] | null>(null);
 
-    const [evaluationsData, setEvaluationsData] = useState<Evaluation[]>([]);
-    const [evaluations, setEvaluations] = useState<Evaluation[] | null>(null);
-
-    const [employee, setEmployee] = useState<EmployeeResult | null>(null);
+    const selectedObjective = useObjectivesDataStore(selectActiveObjective);
 
     async function markObjective(ok?: boolean) {
-        if (objectives && objectives[selectedObjective]) {
-            let arr = [...objectives];
+        if (data.objectivesLocal && selectedObjective) {
+            let arr = [...data.objectivesLocal];
             if (
                 ok &&
                 confirm("Do you want to mark this objective as ready ?")
             ) {
-                arr[selectedObjective].status = "ok";
-                setObjectives(arr);
+                arr[data.selectedObjectiveIndex].status = "ok";
+                data.setObjectivesLocal(arr);
                 postObjectives();
             }
 
@@ -60,12 +44,26 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                 !ok &&
                 confirm("Do you want to mark this objective as invalid ?")
             ) {
-                arr[selectedObjective].status = "invalid";
-                setObjectives(arr);
+                arr[data.selectedObjectiveIndex].status = "invalid";
+                data.setObjectivesLocal(arr);
                 postObjectives();
             }
         } else {
         }
+    }
+
+    async function fetchStep() {
+        axios
+            .get<Step[]>(process.env.NEXT_PUBLIC_API_URL + "/api/steps/")
+            .then((response) => {
+                if (response.data) {
+                    console.log("steps", response.data);
+                    data.setEvaluationSteps(response.data);
+                } else {
+                    data.setEvaluationSteps([]);
+                }
+            })
+            .catch((err) => console.log(err));
     }
 
     async function fetchObjectives() {
@@ -78,10 +76,29 @@ export default function Objectives({ params }: { params: { userId: string } }) {
             )
             .then((response) => {
                 if (response.data) {
-                    setObjectivesData([...response.data]);
+                    data.setObjectives([...response.data]);
+                    console.log("objectives", response.data);
                 } else {
-                    console.log(response);
-                    setObjectivesData([]);
+                    data.setObjectives([]);
+                }
+            })
+            .catch((err) => console.log(err));
+    }
+
+    async function fetchObjectiveEvaluations() {
+        axios
+            .get<ObjectiveEvaluation[]>(
+                process.env.NEXT_PUBLIC_API_URL +
+                    "/api/employees/" +
+                    params.userId +
+                    "/objectiveEvaluations"
+            )
+            .then((response) => {
+                if (response.data) {
+                    data.setObjectiveEvaluations([...response.data]);
+                    console.log("objectiveEvaluations", response.data);
+                } else {
+                    data.setObjectiveEvaluations([]);
                 }
             })
             .catch((err) => console.log(err));
@@ -97,7 +114,8 @@ export default function Objectives({ params }: { params: { userId: string } }) {
             )
             .then((response) => {
                 if (response.data.employeeId) {
-                    setEmployee(response.data);
+                    console.log("employee", response.data);
+                    data.setEmployee(response.data);
                 } else {
                 }
             })
@@ -113,11 +131,11 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                     "/comments"
             )
             .then((response) => {
-                console.log(response.data);
+                console.log("comments", response.data);
                 if (response.data[0].commentId) {
-                    setcommentsData(response.data);
+                    data.setComments(response.data);
                 } else {
-                    setcommentsData([]);
+                    data.setComments([]);
                 }
             })
             .catch((err) => console.log(err));
@@ -131,7 +149,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                 for (const draft of evaluations) {
                     console.log(draft);
                     // Check if there's an existing evaluation with the same evaluationId
-                    const found = evaluationsData.find(
+                    const found = data.evaluations.find(
                         (before) => before.evaluationId === draft.evaluationId
                     );
                     // If there's no existing evaluation or the new one is different, post it
@@ -160,10 +178,10 @@ export default function Objectives({ params }: { params: { userId: string } }) {
             const response = await axios.get<Evaluation[]>(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/employees/${params.userId}/evaluations`
             ); // Adjust the API endpoint
-            console.log(response.data);
-            setEvaluationsData(response.data);
+            console.log("evaluations", response.data);
+            data.setEvaluations(response.data);
             if (!response.data) {
-                setEvaluationsData([]);
+                data.setEvaluations([]);
             }
         } catch (error) {
             console.error("Error fetching evaluations:", error);
@@ -171,7 +189,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
     };
 
     function postObjectives() {
-        console.log(objectives);
+        console.log(data.objectivesLocal);
         axios
             .post(
                 process.env.NEXT_PUBLIC_API_URL +
@@ -179,7 +197,7 @@ export default function Objectives({ params }: { params: { userId: string } }) {
                     params.userId +
                     "/objectives",
                 {
-                    objectives,
+                    objectives: data.objectivesLocal,
                 }
             )
             .then((response) => {
@@ -194,110 +212,109 @@ export default function Objectives({ params }: { params: { userId: string } }) {
     function init() {
         fetchUser();
         fetchObjectives();
+        fetchObjectiveEvaluations();
         fetchComments();
         fetchEvaluations();
+        fetchStep();
     }
 
     useEffect(() => {
         init();
         // eslint-disable-next-line react-hooks/exhaustive-deps
+        return () => {
+            console.log("Cleaning up");
+            data.reset();
+        };
     }, []);
-    useEffect(() => {
-        const arr = objectivesData.map((a) => ({ ...a }));
-        setObjectives(arr);
-    }, [objectivesData]);
 
     useEffect(() => {
-        const arr = commentsData.map((a) => ({ ...a }));
+        const arr = data.objectives.map((a) => ({ ...a }));
+        data.setObjectivesLocal(arr);
+    }, [data.objectives]);
+
+    useEffect(() => {
+        const arr = data.comments.map((a) => ({ ...a }));
         setComments(arr);
-    }, [commentsData]);
+    }, [data.comments]);
 
     useEffect(() => {
-        const arr = evaluationsData.map((a) => ({ ...a }));
+        const arr = data.evaluations.map((a) => ({ ...a }));
         setEvaluations(arr);
-    }, [evaluationsData]);
+    }, [data.evaluations]);
 
     useEffect(() => {
         console.log("user", user);
-        console.log("employee", employee);
-    }, [user, employee]);
+        console.log("employee", data.employee);
+    }, [user, data.employee]);
 
     return (
         // <ProtectedRoute>
-        <main className="flex min-h-screen flex-col items-start justify-start gap-2 p-8">
-            {objectives !== null && employee !== null && comments !== null ? (
+        <main className="flex min-h-screen flex-col items-start justify-start gap-2 p-4 px-8">
+            {data.objectivesLocal !== null &&
+            data.employee !== null &&
+            comments !== null ? (
                 evaluations != null &&
                 user &&
-                employee && (
+                data.employee &&
+                data.evaluationSteps && (
                     <>
                         {/* Top Row */}
                         <div className="flex w-full gap-2 transition-all">
-                            {/* Shows the different steps of the evaluation process and allows navigation between them */}
-                            <Menu setSelected={setPanel} selected={panel} />
-
-                            <Evaluation />
-                            {/* Shows profile card with supervisor */}
-                            {employee && <Profile user={employee} />}
+                            <Evaluation fetch={fetchStep} />
+                            {data.employee && <Profile user={data.employee} />}
                         </div>
                         {/* Main row */}
-                        {panel == 0 && (
-                            <div className="flex w-full gap-2 transition-all">
+                        {data.selectedEvaluationStep == 0 && (
+                            <div className="flex w-full gap-2">
                                 {/* Sidebar with objective list */}
                                 <ObjectiveList
-                                    user={user}
-                                    employee={employee}
-                                    // @ts-expect-error
-                                    setObjectives={setObjectives}
+                                    employee={data.employee}
                                     onSubmit={postObjectives}
-                                    objectives={objectives}
-                                    cache={objectivesData}
-                                    selectedObjective={selectedObjective}
-                                    setSelectedObjective={setSelectedObjective}
+                                    objectives={data.objectivesLocal}
                                 />
                                 {/* Main objective form */}
                                 <NewObjective
-                                    user={user}
-                                    employee={employee}
-                                    selectedObjective={selectedObjective}
-                                    objectives={objectives}
-                                    // @ts-expect-error
-                                    setObjectives={setObjectives}
+                                    employee={data.employee}
+                                    objectives={data.objectivesLocal}
                                     onMark={markObjective}
-                                    onGrade={postObjectives}
                                 />
                                 {/* List of comments of the supervisor */}
                                 <CommentList
                                     user={user}
-                                    employee={employee}
-                                    objectives={objectives}
-                                    selectedObjective={selectedObjective}
+                                    employee={data.employee}
+                                    objectives={data.objectivesLocal}
                                     // @ts-expect-error
                                     setComments={setComments}
                                     comments={comments}
-                                    cache={commentsData}
+                                    cache={data.comments}
                                     fetch={fetchComments}
                                 />
                             </div>
                         )}
-                        {panel == 1 && (
-                            <div className="flex w-full gap-2 transition-all">
+                        {data.selectedEvaluationStep == 1 && (
+                            <div className="flex w-full justify-center">
                                 {/* Self evaluation form */}
                                 <NewSelfEvaluation
                                     evaluations={evaluations}
-                                    cache={evaluationsData}
+                                    cache={data.evaluations}
                                     user={user}
-                                    employee={employee}
+                                    employee={data.employee}
                                     // @ts-expect-error
                                     setEvaluations={setEvaluations}
                                     onSubmit={postEvaluations}
                                     employeeId={params.userId}
                                 />
-                                {/* Superior evaluation form */}
+                            </div>
+                        )}
+
+                        {data.selectedEvaluationStep == 2 && (
+                            <div className="flex w-full justify-center">
+                                {/* Self evaluation form */}
                                 <NewEvaluation
                                     evaluations={evaluations}
-                                    cache={evaluationsData}
+                                    cache={data.evaluations}
                                     user={user}
-                                    employee={employee}
+                                    employee={data.employee}
                                     // @ts-expect-error
                                     setEvaluations={setEvaluations}
                                     onSubmit={postEvaluations}
@@ -381,8 +398,177 @@ function Profile({ user }: { user: EmployeeResult }) {
     );
 }
 
-function Evaluation() {
-    const [step, setStep] = useState<number>(0);
+function Step({
+    step,
+    postSteps,
+    index,
+}: {
+    step: Step;
+    postSteps: (number: number) => any;
+    index: 0 | 1 | 2;
+}) {
+    const data = useObjectivesDataStore();
+    const activeStep = useObjectivesDataStore(selectActiveStep);
+    const { user, logout } = useAuth();
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [isEditingMessage, setIsEditingMessage] = useState<boolean>(false);
+    const divRef = useRef<HTMLDivElement>(null);
+
+    const handleClickOutside = (event: MouseEvent) => {
+        setIsOpen(false);
+    };
+
+    useEffect(() => {
+        // Bind the event listener
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            // Unbind the event listener on clean up
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [divRef]);
+
+    return (
+        <>
+            {user && (
+                <div className="relative flex items-center justify-center gap-4">
+                    <Modal
+                        show={isEditingMessage}
+                        onClose={() => setIsEditingMessage(false)}
+                    >
+                        <EditStep
+                            step={step}
+                            onFormSubmit={(success) => {
+                                if (success) {
+                                    setIsEditingMessage(false);
+                                } else {
+                                }
+                            }}
+                        />
+                    </Modal>
+
+                    <button
+                        onContextMenu={(e) => {
+                            e.preventDefault();
+                            if (user.role == "hr") {
+                                setIsOpen(true);
+                            }
+                        }}
+                        onClick={(e) => {
+                            if (activeStep >= index) {
+                                data.setSelectedEvaluationStep(index);
+                            }
+                        }}
+                        className={cn(
+                            "p-2 px-4 border border-transparent rounded-lg flex flex-col items-center justify-center text-xs font-semibold transition-all active:scale-95",
+                            `${
+                                activeStep >= index
+                                    ? "bg-transparent-100 text-green-600 border-green-300"
+                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-300"
+                            }`,
+                            `${
+                                data.selectedEvaluationStep == index &&
+                                "bg-green-100 text-green-600 border-green-300"
+                            }`
+                        )}
+                    >
+                        <Icon
+                            icon="ic:baseline-star"
+                            className="ml-1"
+                            fontSize={14}
+                        />
+                        {step.name}
+                        <p className="-mt-0 text-[8px]">
+                            starts{" "}
+                            {step.deadline.substring(8, 10) +
+                                "/" +
+                                step.deadline.substring(5, 7)}
+                        </p>
+                    </button>
+
+                    <div
+                        ref={divRef}
+                        className={
+                            "absolute left-0 flex flex-col justify-start items-start min-w-full top-full mt-2 rounded-sm border border-zinc-200 bg-white shadow-sm transition-all z-10 " +
+                            `${
+                                isOpen
+                                    ? "opacity-100 visible translate-y-0"
+                                    : "opacity-0 invisible -translate-y-4"
+                            }`
+                        }
+                    >
+                        <button
+                            onClick={() => {
+                                setIsEditingMessage(true);
+                            }}
+                            className={
+                                "rounded-lg whitespace-nowrap p-2 px-3 text-xs font-bold transition-all hover:text-zinc-800 text-zinc-800 hover:bg-zinc-50 active:scale-90 flex items-center justify-between gap-4 group w-full "
+                            }
+                        >
+                            Edit evaluation step
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="12"
+                                height="12"
+                                viewBox="0 0 1024 1024"
+                            >
+                                <path
+                                    fill="currentColor"
+                                    d="M880 836H144c-17.7 0-32 14.3-32 32v36c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-36c0-17.7-14.3-32-32-32m-622.3-84c2 0 4-.2 6-.5L431.9 722c2-.4 3.9-1.3 5.3-2.8l423.9-423.9a9.96 9.96 0 0 0 0-14.1L694.9 114.9c-1.9-1.9-4.4-2.9-7.1-2.9s-5.2 1-7.1 2.9L256.8 538.8c-1.5 1.5-2.4 3.3-2.8 5.3l-29.5 168.2a33.5 33.5 0 0 0 9.4 29.8c6.6 6.4 14.9 9.9 23.8 9.9"
+                                />
+                            </svg>
+                        </button>
+                        <button
+                            onClick={() => {
+                                if (
+                                    confirm(
+                                        "Do you want to set this step as active ?"
+                                    )
+                                ) {
+                                    postSteps(index);
+                                }
+                            }}
+                            className={
+                                "whitespace-nowrap p-2 px-3 text-xs font-bold transition-all hover:text-zinc-800 text-green-600 bg-green-100 hover:bg-zinc-50 active:scale-90 flex items-center justify-between gap-4 group w-full "
+                            }
+                        >
+                            Set as active
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    fill="currentColor"
+                                    d="M4 19v-2h2v-7q0-2.075 1.25-3.687T10.5 4.2v-.7q0-.625.438-1.062T12 2q.625 0 1.063.438T13.5 3.5v.7q2 .5 3.25 2.113T18 10v7h2v2zm8 3q-.825 0-1.412-.587T10 20h4q0 .825-.587 1.413T12 22M2 10q0-2.5 1.113-4.587T6.1 1.95l1.175 1.6q-1.5 1.1-2.387 2.775T4 10zm18 0q0-2-.888-3.675T16.726 3.55l1.175-1.6q1.875 1.375 2.988 3.463T22 10z"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}
+
+function Evaluation({ fetch }: { fetch: () => any }) {
+    const data = useObjectivesDataStore();
+    const activeStep = useObjectivesDataStore(selectActiveStep);
+
+    const postSteps = async (index: number) => {
+        await axios
+            .put(
+                `${process.env.NEXT_PUBLIC_API_URL}/api/steps/${index}/current`
+            )
+            .then((response) => {
+                if (response.status == 200) {
+                    fetch();
+                    alert("Steps updated successfully");
+                }
+            })
+            .catch((err) => console.log(err));
+    };
+
     return (
         <div className="flex w-full flex-1 items-center justify-between rounded-md border border-zinc-200 bg-white p-4 text-center shadow-sm transition-all">
             <div className="flex flex-col items-start justify-start gap-2">
@@ -395,169 +581,47 @@ function Evaluation() {
                     />
                 </Chip>
                 <div className="flex w-full items-center justify-start gap-2">
-                    <button
-                        onClick={() => setStep(0)}
-                        className={cn(
-                            "p-2 px-4 border border-transparent rounded-lg flex flex-col items-center justify-center text-xs font-semibold transition-all active:scale-95",
-                            `${
-                                step >= 0
-                                    ? "bg-green-100 text-green-600 border-green-300"
-                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-300"
-                            }`
-                        )}
-                    >
-                        <Icon
-                            icon="icon-park-solid:list-checkbox"
-                            className="ml-1"
-                            fontSize={14}
-                        />
-                        Objective submission
-                        <p className="-mt-0 text-[8px]">starts 5/11</p>
-                    </button>
-                    <div
-                        className={
-                            "h-2 w-2 rounded-full" +
-                            (step > 0 ? " bg-green-300" : " bg-zinc-300")
-                        }
-                    ></div>
-                    <div
-                        className={
-                            "h-2 w-2 rounded-full" +
-                            (step > 0 ? " bg-green-300" : " bg-zinc-300")
-                        }
-                    ></div>
-                    <div
-                        className={
-                            "h-2 w-2 rounded-full" +
-                            (step > 0 ? " bg-green-300" : " bg-zinc-300")
-                        }
-                    ></div>
-                    <button
-                        onClick={() => setStep(1)}
-                        className={cn(
-                            "p-2 px-4 border border-transparent rounded-lg flex flex-col items-center justify-center text-xs font-semibold transition-all active:scale-95",
-                            `${
-                                step >= 1
-                                    ? "bg-green-100 text-green-600 border-green-300"
-                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-300"
-                            }`
-                        )}
-                    >
-                        <Icon
-                            icon="icon-park-solid:thinking-problem"
-                            className="ml-1"
-                            fontSize={14}
-                        />
-                        Self-evaluation
-                        <p className="-mt-0 text-[8px]">starts 3/12</p>
-                    </button>
-                    <div
-                        className={
-                            "h-2 w-2 rounded-full" +
-                            (step > 1 ? " bg-green-300" : " bg-zinc-300")
-                        }
-                    ></div>
-                    <div
-                        className={
-                            "h-2 w-2 rounded-full" +
-                            (step > 1 ? " bg-green-300" : " bg-zinc-300")
-                        }
-                    ></div>
-                    <div
-                        className={
-                            "h-2 w-2 rounded-full" +
-                            (step > 1 ? " bg-green-300" : " bg-zinc-300")
-                        }
-                    ></div>
-                    <button
-                        onClick={() => setStep(2)}
-                        className={cn(
-                            "p-2 px-4 border border-transparent rounded-lg flex flex-col items-center justify-center text-xs font-semibold transition-all active:scale-95",
-                            `${
-                                step >= 2
-                                    ? "bg-green-100 text-green-600 border-green-300"
-                                    : "bg-zinc-100 text-zinc-500 hover:border-zinc-300"
-                            }`
-                        )}
-                    >
-                        <Icon
-                            icon="iconamoon:pen-fill"
-                            className="ml-1"
-                            fontSize={14}
-                        />
-                        Evaluation
-                        <p className="-mt-0 text-[8px]">starts 11/12</p>
-                    </button>
+                    {data.evaluationSteps
+                        .sort((a, b) => a.stepId - b.stepId)
+                        .map((stepObj, index) => (
+                            <>
+                                <Step
+                                    key={stepObj.name}
+                                    step={stepObj}
+                                    postSteps={postSteps}
+                                    index={index as 0 | 1 | 2}
+                                />
+                                {index < data.evaluationSteps.length - 1 && (
+                                    <>
+                                        <div
+                                            className={
+                                                "h-2 w-2 rounded-full" +
+                                                (activeStep > index
+                                                    ? " bg-green-300"
+                                                    : " bg-zinc-300")
+                                            }
+                                        ></div>
+                                        <div
+                                            className={
+                                                "h-2 w-2 rounded-full" +
+                                                (activeStep > index
+                                                    ? " bg-green-300"
+                                                    : " bg-zinc-300")
+                                            }
+                                        ></div>
+                                        <div
+                                            className={
+                                                "h-2 w-2 rounded-full" +
+                                                (activeStep > index
+                                                    ? " bg-green-300"
+                                                    : " bg-zinc-300")
+                                            }
+                                        ></div>
+                                    </>
+                                )}
+                            </>
+                        ))}
                 </div>
-            </div>
-            {/* <div className="flex h-full w-[250px] flex-col items-end justify-between p-0 text-end text-xs font-bold text-zinc-700">
-                <Button type="submit" variant="outline">
-                    Send
-                    <Icon
-                        icon="material-symbols:upload-sharp"
-                        className="ml-1"
-                        fontSize={14}
-                    />
-                </Button>
-            </div> */}
-        </div>
-    );
-}
-
-function Menu({
-    setSelected,
-    selected,
-}: {
-    setSelected: (idx: number) => any;
-    selected: number;
-}) {
-    return (
-        <div className="flex flex-col items-start justify-center gap-2 rounded-md border border-zinc-200 bg-white p-4 shadow-sm transition-all">
-            <Chip>
-                My performance
-                <Icon
-                    icon="material-symbols:info"
-                    className="ml-1"
-                    fontSize={14}
-                />
-            </Chip>
-            <div className="flex gap-2">
-                <button
-                    onClick={() => setSelected(0)}
-                    className={cn(
-                        "p-2 px-3 border border-transparent rounded-full flex items-center justify-center gap-1 text-xs font-semibold transition-all active:scale-95",
-                        `${
-                            selected == 0
-                                ? "bg-green-100 text-green-600 border-green-300"
-                                : "bg-zinc-100 text-zinc-500 hover:border-zinc-300"
-                        }`
-                    )}
-                >
-                    Objectives
-                    <Icon
-                        icon="material-symbols:target"
-                        className="ml-1"
-                        fontSize={14}
-                    />
-                </button>
-                <button
-                    onClick={() => setSelected(1)}
-                    className={cn(
-                        "p-2 px-3 border border-transparent rounded-full flex items-center justify-center gap-1 text-xs font-semibold transition-all active:scale-95",
-                        `${
-                            selected == 1
-                                ? "bg-green-100 text-green-600 border-green-300"
-                                : "bg-zinc-100 text-zinc-500 hover:border-zinc-300"
-                        }`
-                    )}
-                >
-                    Personal evaluation
-                    <Icon
-                        icon="mdi:performance"
-                        className="ml-1"
-                        fontSize={14}
-                    />
-                </button>
             </div>
         </div>
     );

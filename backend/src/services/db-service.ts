@@ -39,7 +39,7 @@ export class DbService {
     // Method to initialize the database by running SQL scripts
     async init(): Promise<void> {
         // Define the path to the SQL initialization script
-        const sqlFilePath = path.join(__dirname, "..", "..", "sql", "init.sql");
+        const sqlFilePath = path.join(__dirname, "..", "..", "db", "init.sql");
 
         try {
             // Read the SQL script file

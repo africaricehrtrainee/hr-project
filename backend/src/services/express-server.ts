@@ -9,9 +9,11 @@ import evaluationsRoutes from "../routes/evaluationsRoutes";
 import objectivesRoutes from "../routes/objectivesRoutes";
 import positionsRoutes from "../routes/positionsRoutes";
 import authRoutes from "../routes/authRoutes";
+import stepsRoutes from "../routes/stepsRoutes";
 import morgan from "morgan";
 import cors from "cors";
 import { DbService } from "./db-service";
+import cronJob from "../routes/util/cron";
 
 // Define a class named ExpressServer
 export class ExpressServer {
@@ -95,6 +97,7 @@ export class ExpressServer {
         this.app.use("/api/evaluations", evaluationsRoutes);
         this.app.use("/api/objectives", objectivesRoutes);
         this.app.use("/api/positions", positionsRoutes);
+        this.app.use("/api/steps", stepsRoutes);
         this.app.use("/api/auth", authRoutes);
     }
 
@@ -104,6 +107,7 @@ export class ExpressServer {
             console.log(
                 `API server is running on http://localhost:${this.PORT}`
             );
+            // cronJob();
         });
     }
 }

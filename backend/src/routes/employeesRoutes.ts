@@ -121,7 +121,7 @@ router.post("/:id/objectives", isAuthenticated, async (req, res) => {
             // Getting the objective contents
             const objectiveId = objective.objectiveId;
             const title = objective.title ?? null;
-            const status = objective.status ?? null;
+            const status = objective.status ?? "draft";
             const description = objective.description ?? null;
             const successConditions = objective.successConditions ?? null;
             const deadline = objective.deadline ?? null;
@@ -152,9 +152,10 @@ router.post("/:id/objectives", isAuthenticated, async (req, res) => {
                 }
             } else {
                 const result = await dbService.query(
-                    "INSERT INTO objectives (title, description, successConditions, deadline, kpi, grade, comment, employeeId) VALUES (?,?,?,?,?,?,?,?)",
+                    "INSERT INTO objectives (title, status, description, successConditions, deadline, kpi, grade, comment, employeeId) VALUES (?,?,?,?,?,?,?,?,?)",
                     [
                         title,
+                        status,
                         description,
                         successConditions,
                         deadline,
@@ -281,6 +282,25 @@ router.get("/:id/evaluations", isAuthenticated, async (req, res) => {
         const sqlQuery = `
             SELECT * FROM evaluations
             WHERE employeeId = ?
+        `;
+
+        // Execute the query
+        const evaluations = await dbService.query(sqlQuery, [id]);
+        console.log(evaluations);
+        res.status(200).json(evaluations);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error retrieving evaluations");
+    }
+});
+
+router.get("/:id/objectiveEvaluations", isAuthenticated, async (req, res) => {
+    const { id } = req.params; // Get the employee ID from request params
+
+    try {
+        // Define the SQL query to fetch evaluations for the specified employee
+        const sqlQuery = `
+        SELECT objectiveEvaluationId, objectives.employeeId, objectives.objectiveId, objectiveevaluations.authorId, objectiveEvaluations.grade, objectiveEvaluations.comment, objectiveEvaluations.status FROM testdb.objectiveevaluations JOIN objectives ON objectiveevaluations.objectiveId = objectives.objectiveId WHERE objectives.employeeId = ?
         `;
 
         // Execute the query

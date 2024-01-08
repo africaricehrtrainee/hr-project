@@ -4,32 +4,29 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import Button from "./ui/Button";
 import { cn, getCurrentMySQLDate } from "@/util/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { EmployeeResult } from "@/app/objectives/[userId]/page";
+import {
+    selectActiveObjective,
+    useObjectivesDataStore,
+} from "@/app/objectives/[userId]/_store/useStore";
 
 interface ObjectiveListProps {
     employee: EmployeeResult;
-    cache: Objective[];
-    objectives: Objective[];
-    setObjectives: React.Dispatch<React.SetStateAction<Objective[]>>;
     onSubmit: () => any;
-    selectedObjective: number;
-    setSelectedObjective: React.Dispatch<React.SetStateAction<number>>;
+    objectives: Objective[];
 }
 
 const ObjectiveList: React.FC<ObjectiveListProps> = ({
-    cache,
     objectives,
-    setObjectives,
-    onSubmit,
-    selectedObjective,
-    setSelectedObjective,
     employee,
+    onSubmit,
 }) => {
     const { user } = useAuth();
+    const data = useObjectivesDataStore();
+    const selectedObjective = useObjectivesDataStore(selectActiveObjective);
     return (
         <>
             {user && (
-                <div className="relative flex h-[500px] w-[275px] flex-col items-start justify-start rounded-md border border-zinc-200 bg-white shadow-sm transition-all">
+                <div className="relative flex h-[500px] w-[325px] flex-col items-start justify-start rounded-md border border-zinc-200 bg-white shadow-sm transition-all">
                     <div className="flex w-full items-start justify-between p-4">
                         <Chip>
                             Objectives
@@ -39,42 +36,61 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
                                 fontSize={14}
                             />
                         </Chip>
-                        {user.employeeId == employee.employeeId && (
-                            <Button
-                                disabled={objectives.length >= 4}
-                                onClick={() => {
-                                    const arr = [...objectives];
-                                    arr.push({
-                                        employeeId: user.employeeId,
-                                        objectiveId: 0,
-                                        status: "draft",
-                                        title: null,
-                                        description: null,
-                                        successConditions: null,
-                                        deadline: null,
-                                        kpi: null,
-                                        efficiency: null,
-                                        competency: null,
-                                        commitment: null,
-                                        initiative: null,
-                                        respect: null,
-                                        leadership: null,
-                                        createdAt: getCurrentMySQLDate(),
-                                        updatedAt: getCurrentMySQLDate(),
-                                        grade: null,
-                                        comment: null,
-                                    });
-                                    setObjectives(arr);
-                                }}
-                                variant="outline"
-                            >
-                                Create
-                                <Icon
-                                    icon="ic:baseline-plus"
-                                    className="ml-1"
-                                    fontSize={14}
-                                />
-                            </Button>
+                        {user.employeeId == employee.employeeId &&
+                            data.objectiveEvaluations.length == 0 && (
+                                <Button
+                                    disabled={objectives.length >= 4}
+                                    onClick={() => {
+                                        const arr = [...objectives];
+                                        arr.push({
+                                            employeeId: user.employeeId,
+                                            objectiveId: 0,
+                                            status: "draft",
+                                            title: null,
+                                            description: null,
+                                            successConditions: null,
+                                            deadline: null,
+                                            kpi: null,
+                                            efficiency: null,
+                                            competency: null,
+                                            commitment: null,
+                                            initiative: null,
+                                            respect: null,
+                                            leadership: null,
+                                            createdAt: getCurrentMySQLDate(),
+                                            updatedAt: getCurrentMySQLDate(),
+                                            grade: null,
+                                            comment: null,
+                                            selfGrade: null,
+                                            selfComment: null,
+                                        });
+                                        data.setObjectivesLocal(arr);
+                                    }}
+                                    variant="outline"
+                                >
+                                    Create
+                                    <Icon
+                                        icon="ic:baseline-plus"
+                                        className="ml-1"
+                                        fontSize={14}
+                                    />
+                                </Button>
+                            )}
+                        {data.objectiveEvaluations.length > 0 && (
+                            <div className="flex flex-col items-end justify-center rounded-md border border-zinc-100 p-2 text-end">
+                                <p className="text-[10px] font-bold text-zinc-400">
+                                    Total objectives grade
+                                </p>
+                                <p className="text-2xl font-bold text-zinc-700">
+                                    {data.objectiveEvaluations.reduce(
+                                        (prev, cur) => prev + cur.grade,
+                                        0
+                                    ) / data.objectiveEvaluations.length}
+                                    <span className="text-xs font-bold text-zinc-400">
+                                        /5
+                                    </span>
+                                </p>
+                            </div>
                         )}
                     </div>
                     <div className="w-full">
@@ -86,12 +102,15 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
                             )
                             .map((objective, i) => (
                                 <button
-                                    onClick={() => setSelectedObjective(i)}
+                                    onClick={() =>
+                                        data.setSelectedObjectiveIndex(i)
+                                    }
                                     className={cn(
                                         "flex w-full flex-col relative items-start justify-start border-b border-t border-b-zinc-100 border-t-zinc-100 p-2 px-4 transition-all hover:bg-zinc-50",
                                         {
                                             "bg-zinc-50":
-                                                i === selectedObjective,
+                                                i ===
+                                                data.selectedObjectiveIndex,
                                         }
                                     )}
                                     key={i}
@@ -173,7 +192,7 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
                             <Button
                                 className="absolute bottom-4 left-4"
                                 disabled={
-                                    JSON.stringify(cache) ===
+                                    JSON.stringify(data.objectives) ===
                                         JSON.stringify(objectives) ||
                                     objectives.some(
                                         (objective) => objective.title == ""
@@ -184,7 +203,7 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
                                 }}
                                 variant="outline"
                             >
-                                Save draft
+                                Save changes
                                 <Icon
                                     icon="iconamoon:pen-fill"
                                     className="ml-1"
@@ -210,17 +229,21 @@ const ObjectiveList: React.FC<ObjectiveListProps> = ({
                                     // objectives.some((objective) => objective.title == "") ||
                                 }
                                 onClick={() => {
-                                    setObjectives((prev) => {
-                                        let arr = [...prev];
+                                    if (data.objectivesLocal) {
+                                        let arr = [...data.objectivesLocal];
                                         for (const objective of arr) {
-                                            objective.status =
+                                            if (
                                                 objective.status == "ok" ||
                                                 objective.status == "graded"
-                                                    ? objective.status
-                                                    : "sent";
+                                            ) {
+                                            } else {
+                                                objective.status = "sent";
+                                            }
                                         }
-                                        return arr;
-                                    });
+                                        data.setObjectives(arr);
+                                    } else {
+                                        data.setObjectives([]);
+                                    }
                                     onSubmit();
                                 }}
                                 variant="primary"

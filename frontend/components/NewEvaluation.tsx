@@ -1,5 +1,4 @@
 "use client";
-import { EmployeeResult } from "@/app/objectives/[userId]/page";
 import Button from "@/components/ui/Button";
 import { getCurrentMySQLDate } from "@/util/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -84,7 +83,7 @@ export function NewEvaluation({
     }, [evaluations]);
 
     return (
-        <div className="relative flex min-h-[500px] flex-1 flex-col items-start justify-start rounded-md border border-zinc-200 bg-white p-4 shadow-sm transition-all">
+        <div className="relative flex h-[550px] w-[800px] flex-col items-start justify-start rounded-md border border-zinc-200 bg-white p-4 shadow-sm transition-all">
             {evaluations[index] &&
             ((user.employeeId !== evaluations[index].authorId &&
                 evaluations[index].status == "sent") ||
@@ -117,14 +116,15 @@ export function NewEvaluation({
                             Estimated total grade
                         </p>
                         <p className="text-2xl font-bold text-zinc-700">
-                            {(evaluations[index].respectRating ?? 0) +
+                            {((evaluations[index].respectRating ?? 0) +
                                 (evaluations[index].efficiencyRating ?? 0) +
                                 (evaluations[index].commitmentRating ?? 0) +
                                 (evaluations[index].initiativeRating ?? 0) +
                                 (evaluations[index].leadershipRating ?? 0) +
-                                (evaluations[index].competencyRating ?? 0)}
+                                (evaluations[index].competencyRating ?? 0)) /
+                                5}
                             <span className="text-xs font-bold text-zinc-400">
-                                /30
+                                /5
                             </span>
                         </p>
                     </div>
@@ -135,7 +135,7 @@ export function NewEvaluation({
                                 evaluation
                             </p>
                         </div>
-                        <form className="mt-1 grid w-full grid-cols-2 gap-4 pt-2">
+                        <form className="mt-4 grid w-full grid-cols-2 gap-4 pt-2">
                             <div className="flex flex-col gap-3">
                                 {metrics.slice(0, 3).map((metric) => (
                                     <div
@@ -181,9 +181,8 @@ export function NewEvaluation({
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.supervisorId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -212,9 +211,8 @@ export function NewEvaluation({
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.supervisorId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -243,9 +241,8 @@ export function NewEvaluation({
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.supervisorId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -274,9 +271,8 @@ export function NewEvaluation({
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.supervisorId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -378,9 +374,8 @@ export function NewEvaluation({
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.supervisorId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -409,9 +404,8 @@ export function NewEvaluation({
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.supervisorId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -440,9 +434,8 @@ export function NewEvaluation({
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.supervisorId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {
@@ -471,9 +464,8 @@ export function NewEvaluation({
                                                 disabled={
                                                     user.employeeId !==
                                                         employee.supervisorId ||
-                                                    evaluations[index][
-                                                        metric.name
-                                                    ] == "sent"
+                                                    evaluations[index].status ==
+                                                        "sent"
                                                 }
                                                 onClick={() =>
                                                     setEvaluations((prev) => {

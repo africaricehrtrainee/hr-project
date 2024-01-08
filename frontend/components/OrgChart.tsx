@@ -66,7 +66,6 @@ function Label({
         document.addEventListener("click", handleClickOutside);
 
         return () => {
-            // Remove the event listener when the component unmounts
             document.removeEventListener("click", handleClickOutside);
         };
     }, []);
@@ -92,138 +91,6 @@ function Label({
             ) : (
                 <p className="text-[10px] font-medium opacity-50">N/A</p>
             )}
-            {/* 
-            <div
-                onClick={(e) => e.stopPropagation()}
-                className={
-                    "absolute transition-all w-[180px] cursor-default top-full left-0 text-zinc-700 bg-white mt-1 flex flex-col items-center justify-center z-10 rounded-md border border-zinc-200 overflow-hidden shadow-sm" +
-                    `${
-                        !isShown
-                            ? " opacity-0 -translate-y-2 pointer-events-none z-0"
-                            : " opacity-100 translate-y-0"
-                    }`
-                }
-            >
-                <button
-                    onClick={() => {
-                        setIsCreating(true);
-                        setIsShown(false);
-                    }}
-                    className="flex w-full items-center justify-between gap-1 p-2 px-3 transition-all hover:bg-zinc-50"
-                >
-                    Insert position below
-                    <Icon
-                        icon="ic:baseline-plus"
-                        className="ml-1"
-                        fontSize={16}
-                    />
-                </button>
-                <button className="flex w-full items-center justify-between gap-1 p-2 px-3 transition-all hover:bg-zinc-50">
-                    Assign position
-                    <Icon
-                        icon="zondicons:refresh"
-                        className="ml-1"
-                        fontSize={16}
-                    />
-                </button>
-                {position.holderId && (
-                    <button
-                        onClick={() => {
-                            setIsShown(false);
-                            setPositions((prev) => {
-                                if (prev) {
-                                    const arr = [...prev];
-                                    const i = arr.findIndex(
-                                        (pos) => pos.roleId == position.roleId
-                                    );
-                                    if (i !== -1) {
-                                        arr[i].holderId = null;
-                                        return arr;
-                                    } else {
-                                        return [];
-                                    }
-                                } else {
-                                    return [];
-                                }
-                            });
-                        }}
-                        className="flex w-full items-center justify-between gap-1 bg-yellow-50 p-2 px-3 text-yellow-500 transition-all hover:bg-yellow-100"
-                    >
-                        Set vacant
-                        <Icon
-                            icon="iconoir:square-dashed"
-                            className="ml-1"
-                            fontSize={16}
-                        />
-                    </button>
-                )}
-                <button className="flex w-full items-center justify-between gap-1 bg-red-50 p-2 px-3 text-red-500 transition-all hover:bg-red-100">
-                    Delete role
-                    <Icon
-                        icon="mdi:alert-outline"
-                        className="ml-1"
-                        fontSize={16}
-                    />
-                </button>
-
-                <Modal show={isCreating} onClose={() => setIsCreating(false)}>
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            insertPosition(position.roleId, roleName);
-                            setIsCreating(false);
-                            setRoleName("");
-                        }}
-                    >
-                        <div className="flex w-[400px] flex-col items-start justify-start rounded-md border border-zinc-200 bg-white p-8 shadow-sm transition-all">
-                            <div className="flex items-center justify-center gap-1 whitespace-nowrap rounded-md bg-blue-100 p-1 px-2 text-[8px] font-semibold text-blue-700">
-                                Position
-                                <Icon
-                                    icon="ic:baseline-star"
-                                    className="ml-1"
-                                    fontSize={10}
-                                />
-                            </div>
-                            <div className="mt-2 flex w-full items-center justify-between">
-                                <p className="text-2xl font-bold text-zinc-700">
-                                    Create a position
-                                </p>
-                            </div>
-                            <div className="mt-4 flex w-full flex-col justify-start gap-1">
-                                <label className="text-[8px] font-medium text-zinc-300">
-                                    JOB TITLE
-                                </label>
-                                <input
-                                    required
-                                    autoCorrect="off"
-                                    spellCheck="false"
-                                    type="text"
-                                    value={roleName ?? ""}
-                                    onChange={(
-                                        e: React.ChangeEvent<HTMLInputElement>
-                                    ) => setRoleName(e.target.value)}
-                                    placeholder="Enter the first name"
-                                    className="w-full rounded-md border border-zinc-200 p-2 px-3 text-xs font-semibold outline-none transition-all placeholder:text-zinc-300 hover:border-zinc-500 focus:border-brand focus:outline-brand-light disabled:text-zinc-500"
-                                />
-                            </div>
-                            <div className="mt-4 flex w-full items-center justify-start gap-2">
-                                <Button
-                                    type="submit"
-                                    disabled={!roleName}
-                                    variant="primary"
-                                >
-                                    Create position
-                                    <Icon
-                                        icon="ic:baseline-plus"
-                                        className="ml-1"
-                                        fontSize={14}
-                                    />
-                                </Button>
-                            </div>
-                        </div>
-                    </form>
-                </Modal>
-            </div> */}
         </button>
     );
 }
@@ -249,8 +116,7 @@ export default function OrgChart() {
         panzoomRef.current.on("zoom", () => console.log("Zoom!"));
 
         return () => {
-            // @ts-ignore
-            panzoomRef.current.dispose();
+            panzoomRef?.current?.dispose();
         };
     }, []);
 

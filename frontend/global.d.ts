@@ -1,7 +1,7 @@
 // Employees Table Interface
 interface Employee {
     employeeId: number;
-    role: "staff" | "hr" | "admin";
+    role: "staff" | "hr" | "admin" | "consultant";
     email: string;
     firstName: string | null;
     lastName: string | null;
@@ -12,6 +12,27 @@ interface Employee {
     deletedAt: string | null;
 }
 
+interface EmployeeResult {
+    employeeId: number;
+    firstName: string;
+    lastName: string;
+    employeeRoleName: string;
+    supervisorId: number | null;
+    supervisorFirstName: string | null;
+    supervisorLastName: string | null;
+    managerId: number | null;
+    managerFirstName: string | null;
+    managerLastName: number | null;
+}
+
+interface ObjectiveEvaluation {
+    objectiveEvaluationId: number;
+    objectiveId: number;
+    authorId: number;
+    status: "draft" | "sent";
+    grade: number;
+    comment: string;
+}
 // Objectives Table Interface
 interface Objective {
     objectiveId: number;
@@ -30,6 +51,8 @@ interface Objective {
     leadership: string | null;
     grade: number | null;
     comment: string | null;
+    selfGrade: number | null;
+    selfComment: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -79,7 +102,15 @@ interface Evaluation {
     initiative: string | null;
     initiativeRating: number | null;
     respect: string | null;
-    respectRating: number | null;
+    respectRating: number | nulstepI;
     leadership: string | null;
     leadershipRating: number | null;
+}
+
+interface Step {
+    stepId: number;
+    name: string;
+    deadline: string;
+    active: boolean;
+    message;
 }

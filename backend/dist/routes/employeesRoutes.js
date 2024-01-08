@@ -86,7 +86,7 @@ router.get("/:id", authRoutes_1.isAuthenticated, (req, res) => __awaiter(void 0,
     }
 }));
 router.post("/:id/objectives", authRoutes_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f, _g, _h, _j, _k, _l;
+    var _f, _g, _h, _j, _k, _l, _m, _o;
     try {
         const { id } = req.params;
         const { objectives } = req.body;
@@ -112,15 +112,19 @@ router.post("/:id/objectives", authRoutes_1.isAuthenticated, (req, res) => __awa
             const successConditions = (_j = objective.successConditions) !== null && _j !== void 0 ? _j : null;
             const deadline = (_k = objective.deadline) !== null && _k !== void 0 ? _k : null;
             const kpi = (_l = objective.kpi) !== null && _l !== void 0 ? _l : null;
+            const grade = (_m = objective.grade) !== null && _m !== void 0 ? _m : null;
+            const comment = (_o = objective.comment) !== null && _o !== void 0 ? _o : null;
             // Find if objective already exists
             if (objectiveId) {
-                const result = yield dbService.query("UPDATE objectives SET title = ?, status = ?, description = ?, successConditions = ?, deadline = ?, kpi = ? WHERE objectiveId = ?", [
+                const result = yield dbService.query("UPDATE objectives SET title = ?, status = ?, description = ?, successConditions = ?, deadline = ?, kpi = ?, grade = ?, comment = ? WHERE objectiveId = ?", [
                     title,
                     status,
                     description,
                     successConditions,
                     deadline,
                     kpi,
+                    grade,
+                    comment,
                     objectiveId,
                 ]);
                 if (result) {
@@ -131,7 +135,16 @@ router.post("/:id/objectives", authRoutes_1.isAuthenticated, (req, res) => __awa
                 }
             }
             else {
-                const result = yield dbService.query("INSERT INTO objectives (title, description, successConditions, deadline, kpi, employeeId) VALUES (?,?,?,?,?,?)", [title, description, successConditions, deadline, kpi, id]);
+                const result = yield dbService.query("INSERT INTO objectives (title, description, successConditions, deadline, kpi, grade, comment, employeeId) VALUES (?,?,?,?,?,?,?,?)", [
+                    title,
+                    description,
+                    successConditions,
+                    deadline,
+                    kpi,
+                    grade,
+                    comment,
+                    id,
+                ]);
                 if (result) {
                 }
                 else {
@@ -265,12 +278,20 @@ router.get("/:id/comments", authRoutes_1.isAuthenticated, (req, res) => __awaite
 router.post("/:id/comments", authRoutes_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        if (!req.body.content || !req.body.objectiveId || !req.body.content) {
+        if (!req.body.content ||
+            !req.body.objectiveId ||
+            !req.body.content ||
+            !req.body.authorId) {
             return res
                 .status(400)
                 .json("Please include a comment in your request.");
         }
-        const result = yield dbService.query("INSERT INTO comments (employeeId, objectiveId, content) VALUES (?, ?, ?)", [req.body.employeeId, req.body.objectiveId, req.body.content]);
+        const result = yield dbService.query("INSERT INTO comments (employeeId, objectiveId, content, authorId) VALUES (?, ?, ?, ?)", [
+            req.body.employeeId,
+            req.body.objectiveId,
+            req.body.content,
+            req.body.authorId,
+        ]);
         res.status(201).json("Successfully added comment.");
     }
     catch (error) {
